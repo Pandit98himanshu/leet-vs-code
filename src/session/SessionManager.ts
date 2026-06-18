@@ -19,11 +19,20 @@ export class SessionManager {
     return !!session;
   }
 
+  async getSession(): Promise<string | undefined> {
+    return this.context.secrets.get(SESSION_KEY);
+  }
+
+  async getCredential(): Promise<Credential> {
+    const credential = new Credential();
+    await credential.init(await this.getSession());
+    return credential;
+  }
+
   async getLeetCodeClient(): Promise<LeetCode> {
-    const session = await this.context.secrets.get(SESSION_KEY);
+    const session = await this.getSession();
     if (session) {
-      const credential = new Credential();
-      await credential.init(session);
+      const credential = await this.getCredential();
       return new LeetCode(credential);
     }
     return new LeetCode();
