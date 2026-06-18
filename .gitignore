@@ -1,5 +1,6 @@
 dist/
 out/
+.output/
 node_modules/
 *.vsix
 tsconfig.json
