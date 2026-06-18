@@ -1,0 +1,119 @@
+{
+  "name": "leetvscode",
+  "displayName": "Leet-VS-Code",
+  "version": "1.0.0",
+  "main": "./dist/extension.js",
+  "keywords": [
+    "leetcode",
+    "vscode"
+  ],
+  "author": "pandithimanshu",
+  "publisher": "pandithimanshu",
+  "license": "ISC",
+  "engines": {
+    "vscode": "^1.125.0"
+  },
+  "activationEvents": [
+    "onStartupFinished",
+    "onView:leetvscodeProblems",
+    "onCommand:leetvscode.showDailyChallenge",
+    "onCommand:leetvscode.searchProblem",
+    "onCommand:leetvscode.browseProblems",
+    "onCommand:leetvscode.showUserProfile",
+    "onCommand:leetvscode.setSession",
+    "onCommand:leetvscode.clearSession",
+    "onCommand:leetvscode.showMySubmissions"
+  ],
+  "description": "Browse LeetCode problems, view daily challenges, and look up user profiles directly in VS Code.",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "leetvscode",
+          "title": "LeetCode",
+          "icon": "media/leetcode.svg"
+        }
+      ]
+    },
+    "views": {
+      "leetvscode": [
+        {
+          "id": "leetvscodeProblems",
+          "name": "LeetCode"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "leetvscode.showDailyChallenge",
+        "title": "LeetCode: Show Daily Challenge",
+        "icon": "$(calender)"
+      },
+      {
+        "command": "leetvscode.searchProblem",
+        "title": "LeetCode: Search Problem",
+        "icon": "$(search)"
+      },
+      {
+        "command": "leetvscode.browseProblems",
+        "title": "LeetCode: Browse Problems",
+        "icon": "$(list-unordered)"
+      },
+      {
+        "command": "leetvscode.showUserProfile",
+        "title": "LeetCode: Show User Profile",
+        "icon": "$(person)"
+      },
+      {
+        "command": "leetvscode.setSession",
+        "title": "LeetCode: Set Session Cookie",
+        "icon": "$(key)"
+      },
+      {
+        "command": "leetvscode.clearSession",
+        "title": "LeetCode: Clear Session Cookie",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "leetvscode.showMySubmissions",
+        "title": "LeetCode: Show my recent Submissions",
+        "icon": "$(pass)"
+      }
+    ],
+    "configuration": {
+      "title": "Leet-VS-Code",
+      "properties": {
+        "leetvscode.defaultDifficulty": {
+          "type": "string",
+          "default": "All",
+          "enum": [
+            "All",
+            "Easy",
+            "Medium",
+            "Hard"
+          ],
+          "description": "Default difficulty filter for prolem browsing"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --minify",
+    "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --watch",
+    "package": "vsce package --no-dependencies --allow-missing-repository"
+  },
+  "dependencies": {
+    "leetcode-query": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.3",
+    "@types/vscode": "^1.125.0",
+    "@vscode/vsce": "^3.9.2",
+    "@fortawesome/fontawesome-svg-core":"^7.2.0",
+    "@fortawesome/free-brands-svg-icons":"^7.2.0",
+    "@fortawesome/react-fontawesome":"^3.3.1",
+    "@types/react":"^19.2.17",
+    "esbuild": "^0.28.1",
+    "typescript": "^6.0.3"
+  }
+}
