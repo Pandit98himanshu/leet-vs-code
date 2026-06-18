@@ -75,6 +75,16 @@ export class ProblemsProvider
         "By title slug"
       ),
       new ProblemItem(
+        hasSession ? "Submit Solution" : "Submit Solution (login required)",
+        {
+          command: "leetvscode.submitSolution",
+          title: "Submit Solution",
+        },
+        vscode.TreeItemCollapsibleState.None,
+        hasSession ? "cloud-upload" : "lock",
+        "Active editor"
+      ),
+      new ProblemItem(
         "User Profile",
         {
           command: "leetvscode.showUserProfile",

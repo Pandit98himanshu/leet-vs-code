@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -20,6 +20,8 @@
     "onCommand:leetvscode.searchProblem",
     "onCommand:leetvscode.browseProblems",
     "onCommand:leetvscode.showUserProfile",
+    "onCommand:leetvscode.openSolution",
+    "onCommand:leetvscode.submitSolution",
     "onCommand:leetvscode.setSession",
     "onCommand:leetvscode.clearSession",
     "onCommand:leetvscode.showMySubmissions"
@@ -63,6 +65,16 @@
         "command": "leetvscode.showUserProfile",
         "title": "LeetCode: Show User Profile",
         "icon": "$(person)"
+      },
+      {
+        "command": "leetvscode.openSolution",
+        "title": "LeetCode: Open Solution File",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "leetvscode.submitSolution",
+        "title": "LeetCode: Submit Solution",
+        "icon": "$(cloud-upload)"
       },
       {
         "command": "leetvscode.setSession",

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 interface Problem {
+  questionId: string;
   questionFrontendId: string;
   title: string;
   titleSlug: string;
@@ -55,6 +56,30 @@ export class ProblemPanel {
     this._update(problem, dailyDate);
 
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
+    this._panel.webview.onDidReceiveMessage(
+      async (message) => {
+        if (message?.command === "searchProblem" && message.slug) {
+          await vscode.commands.executeCommand(
+            "leetvscode.searchProblem",
+            String(message.slug)
+          );
+        }
+
+        if (message?.command === "openSolution") {
+          await vscode.commands.executeCommand(
+            "leetvscode.openSolution",
+            message.problem,
+            Number(message.snippetIndex ?? 0)
+          );
+        }
+
+        if (message?.command === "submitSolution") {
+          await vscode.commands.executeCommand("leetvscode.submitSolution");
+        }
+      },
+      null,
+      this._disposables
+    );
   }
 
   private _update(problem: Problem, dailyDate?: string) {
@@ -99,11 +124,21 @@ export class ProblemPanel {
       )
       .join("");
 
-    const snippetsJson = JSON.stringify(
+    const snippetsJson = escapeScriptJson(JSON.stringify(
       (problem.codeSnippets ?? []).map((s) => ({
         lang: s.lang,
+        langSlug: s.langSlug,
         code: s.code,
       }))
+    ));
+    const problemJson = escapeScriptJson(
+      JSON.stringify({
+        questionId: problem.questionId,
+        questionFrontendId: problem.questionFrontendId,
+        title: problem.title,
+        titleSlug: problem.titleSlug,
+        codeSnippets: problem.codeSnippets ?? [],
+      })
     );
 
     // Hints
@@ -261,6 +296,8 @@ export class ProblemPanel {
       ? `<div class="snippet-bar">
            <select id="langSelect" onchange="updateSnippet()">${snippetOptions}</select>
            <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
+           <button class="btn" onclick="openSolution()">Open in Editor</button>
+           <button class="btn btn-secondary" onclick="submitSolution()">Submit Active File</button>
            <span class="copy-notice" id="copyNotice">Copied!</span>
          </div>
          <div class="snippet-code">
@@ -277,6 +314,7 @@ export class ProblemPanel {
   <script>
     const vscode = acquireVsCodeApi();
     const snippets = ${snippetsJson};
+    const problem = ${problemJson};
 
     function updateSnippet() {
       const idx = document.getElementById('langSelect')?.value ?? '0';
@@ -299,6 +337,15 @@ export class ProblemPanel {
 
     function openProblem(slug) {
       vscode.postMessage({ command: 'searchProblem', slug });
+    }
+
+    function openSolution() {
+      const snippetIndex = parseInt(document.getElementById('langSelect')?.value ?? '0');
+      vscode.postMessage({ command: 'openSolution', problem, snippetIndex });
+    }
+
+    function submitSolution() {
+      vscode.postMessage({ command: 'submitSolution' });
     }
 
     // init
@@ -324,4 +371,8 @@ function escapeHtml(str: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function escapeScriptJson(json: string): string {
+  return json.replace(/</g, "\\u003c");
 }
