@@ -11,7 +11,7 @@
   "publisher": "pandithimanshu",
   "license": "ISC",
   "engines": {
-    "vscode": "^1.125.0"
+    "vscode": "^1.119.1"
   },
   "activationEvents": [
     "onStartupFinished",
@@ -119,7 +119,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
-    "@types/vscode": "^1.125.0",
+    "@types/vscode": "^1.119.1",
     "@vscode/vsce": "^3.9.2",
     "@fortawesome/fontawesome-svg-core":"^7.2.0",
     "@fortawesome/free-brands-svg-icons":"^7.2.0",
