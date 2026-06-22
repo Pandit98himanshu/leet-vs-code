@@ -73,16 +73,6 @@ export class ProblemsProvider
 
     return [
       new ProblemItem(
-        "Daily Challenge",
-        {
-          command: "leetvscode.showDailyChallenge",
-          title: "Show Daily Challenge",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        "calendar",
-        "Today's problem"
-      ),
-      new ProblemItem(
         "Browse Problems",
         {
           command: "leetvscode.browseProblems",
@@ -91,16 +81,6 @@ export class ProblemsProvider
         vscode.TreeItemCollapsibleState.None,
         "list-unordered",
         "Filter by difficulty"
-      ),
-      new ProblemItem(
-        "Search Problem",
-        {
-          command: "leetvscode.searchProblem",
-          title: "Search Problem",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        "search",
-        "By title slug"
       ),
       new ProblemItem(
         "View All Problems",
@@ -144,17 +124,6 @@ export class ProblemsProvider
         vscode.TreeItemCollapsibleState.None,
         hasSession ? "pass" : "lock",
         hasSession ? "Last 20" : "Set session first"
-      ),
-      new ProblemItem(
-        hasSession ? "Clear Session" : "Set Session Cookie",
-        {
-          command: hasSession
-            ? "leetvscode.clearSession"
-            : "leetvscode.setSession",
-          title: hasSession ? "Clear Session" : "Set Session",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        hasSession ? "sign-out" : "key"
       ),
     ];
   }

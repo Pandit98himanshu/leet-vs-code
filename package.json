@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -42,19 +42,20 @@
       "leetvscode": [
         {
           "id": "leetvscodeProblems",
-          "name": "LeetCode"
+          "name": "LeetCode",
+          "icon": "media/leetcode.svg"
         }
       ]
     },
     "commands": [
       {
         "command": "leetvscode.showDailyChallenge",
-        "title": "LeetCode: Show Daily Challenge",
-        "icon": "$(calender)"
+        "title": "Show Daily Challenge",
+        "icon": "$(calendar)"
       },
       {
         "command": "leetvscode.searchProblem",
-        "title": "LeetCode: Search Problem",
+        "title": "Search Problem",
         "icon": "$(search)"
       },
       {
@@ -84,12 +85,12 @@
       },
       {
         "command": "leetvscode.setSession",
-        "title": "LeetCode: Set Session Cookie",
+        "title": "Set Session Cookie",
         "icon": "$(key)"
       },
       {
         "command": "leetvscode.clearSession",
-        "title": "LeetCode: Clear Session Cookie",
+        "title": "Clear Session Cookie",
         "icon": "$(sign-out)"
       },
       {
@@ -98,6 +99,30 @@
         "icon": "$(pass)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "leetvscode.showDailyChallenge",
+          "when": "view == leetvscodeProblems",
+          "group": "navigation"
+        },
+        {
+          "command": "leetvscode.searchProblem",
+          "when": "view == leetvscodeProblems",
+          "group": "navigation"
+        },
+        {
+          "command": "leetvscode.setSession",
+          "when": "view == leetvscodeProblems && !leetvscode:hasSession",
+          "group": "navigation"
+        },
+        {
+          "command": "leetvscode.clearSession",
+          "when": "view == leetvscodeProblems && leetvscode:hasSession",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "Leet-VS-Code",
       "properties": {

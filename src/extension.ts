@@ -29,12 +29,19 @@ export function activate(context: vscode.ExtensionContext) {
   const submitService = new SubmitService();
   const solutionMetadata = new Map<string, SolutionMetadata>();
 
+  async function updateSessionContext(): Promise<void> {
+    const hasSession = await sessionManager.hasSession();
+    vscode.commands.executeCommand("setContext", "leetvscode:hasSession", hasSession);
+  }
+
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider(
       "leetvscodeProblems",
       problemsProvider
     )
   );
+
+  updateSessionContext();
 
   // --- Commands ---
 
@@ -404,6 +411,7 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
         await sessionManager.setSession(session.trim());
+        updateSessionContext();
         problemsProvider.refresh();
         vscode.window.showInformationMessage(
           "LeetCode session saved. You can now access authenticated features."
@@ -417,6 +425,7 @@ export function activate(context: vscode.ExtensionContext) {
       "leetvscode.clearSession",
       async () => {
         await sessionManager.clearSession();
+        updateSessionContext();
         problemsProvider.refresh();
         vscode.window.showInformationMessage("LeetCode session cleared.");
       }
