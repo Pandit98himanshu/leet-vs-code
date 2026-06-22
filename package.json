@@ -16,6 +16,7 @@
   "activationEvents": [
     "onStartupFinished",
     "onView:leetvscodeProblems",
+    "onView:leetvscodeSubmissions",
     "onCommand:leetvscode.showDailyChallenge",
     "onCommand:leetvscode.searchProblem",
     "onCommand:leetvscode.viewAllProblems",
@@ -41,8 +42,14 @@
       "leetvscode": [
         {
           "id": "leetvscodeProblems",
-          "name": "LeetCode",
-          "icon": "media/leetcode.svg"
+          "name": "All Problems",
+          "icon": "$(list-unordered)"
+        },
+        {
+          "id": "leetvscodeSubmissions",
+          "name": "My Submissions",
+          "icon": "$(history)",
+          "visibility": "collapsed"
         }
       ]
     },
@@ -123,6 +130,11 @@
           "command": "leetvscode.clearSession",
           "when": "view == leetvscodeProblems && leetvscode:hasSession",
           "group": "navigation@4"
+        },
+        {
+          "command": "leetvscode.showMySubmissions",
+          "when": "view == leetvscodeSubmissions && leetvscode:hasSession",
+          "group": "navigation@0"
         }
       ]
     },

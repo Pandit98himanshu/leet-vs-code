@@ -4,6 +4,7 @@ import { LeetCode } from "leetcode-query";
 import { ProblemPanel } from "./panels/ProblemPanel";
 import { UserProfilePanel } from "./panels/UserProfilePanel";
 import { ProblemsProvider } from "./providers/ProblemsProvider";
+import { SubmissionsProvider } from "./providers/SubmissionsProvider";
 import { SessionManager } from "./session/SessionManager";
 import { SubmitResult, SubmitService } from "./submission/SubmitService";
 
@@ -26,6 +27,7 @@ interface ProblemForEditor {
 export function activate(context: vscode.ExtensionContext) {
   const sessionManager = new SessionManager(context);
   const problemsProvider = new ProblemsProvider(sessionManager);
+  const submissionsProvider = new SubmissionsProvider(sessionManager);
   const submitService = new SubmitService();
   const solutionMetadata = new Map<string, SolutionMetadata>();
 
@@ -41,7 +43,20 @@ export function activate(context: vscode.ExtensionContext) {
     )
   );
 
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider(
+      "leetvscodeSubmissions",
+      submissionsProvider
+    )
+  );
+
   updateSessionContext();
+
+  // Ensure view title-bar actions stay visible even when the view isn't hovered
+  const viewConfig = vscode.workspace.getConfiguration("workbench.view");
+  if (!viewConfig.get<boolean>("alwaysShowHeaderActions")) {
+    viewConfig.update("alwaysShowHeaderActions", true, vscode.ConfigurationTarget.Global);
+  }
 
   // --- Commands ---
 
@@ -129,7 +144,6 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "leetvscode.viewAllProblems",
       async () => {
-        problemsProvider.showAllProblems();
         await vscode.commands.executeCommand("leetvscodeProblems.focus");
       }
     )
@@ -310,6 +324,7 @@ export function activate(context: vscode.ExtensionContext) {
         await sessionManager.setSession(session.trim());
         updateSessionContext();
         problemsProvider.refresh();
+        submissionsProvider.refresh();
         vscode.window.showInformationMessage(
           "LeetCode session saved. You can now access authenticated features."
         );
@@ -324,6 +339,7 @@ export function activate(context: vscode.ExtensionContext) {
         await sessionManager.clearSession();
         updateSessionContext();
         problemsProvider.refresh();
+        submissionsProvider.refresh();
         vscode.window.showInformationMessage("LeetCode session cleared.");
       }
     )
@@ -346,8 +362,8 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        problemsProvider.showMySubmissions();
-        await vscode.commands.executeCommand("leetvscodeProblems.focus");
+        submissionsProvider.refresh();
+        await vscode.commands.executeCommand("leetvscodeSubmissions.focus");
       }
     )
   );
