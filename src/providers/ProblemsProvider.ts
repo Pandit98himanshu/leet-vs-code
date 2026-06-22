@@ -76,16 +76,6 @@ export class ProblemsProvider
         "allProblems"
       ),
       new ProblemItem(
-        hasSession ? "Submit Solution" : "Submit Solution (login required)",
-        {
-          command: "leetvscode.submitSolution",
-          title: "Submit Solution",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        hasSession ? "cloud-upload" : "lock",
-        "Active editor"
-      ),
-      new ProblemItem(
         hasSession ? "My Submissions" : "My Submissions (login required)",
         {
           command: "leetvscode.showMySubmissions",

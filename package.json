@@ -95,6 +95,11 @@
     "menus": {
       "view/title": [
         {
+          "command": "leetvscode.submitSolution",
+          "when": "view == leetvscodeProblems && leetvscode:hasSession",
+          "group": "navigation@0"
+        },
+        {
           "command": "leetvscode.showDailyChallenge",
           "when": "view == leetvscodeProblems",
           "group": "navigation@1"
