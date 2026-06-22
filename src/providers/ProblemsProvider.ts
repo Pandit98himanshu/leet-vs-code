@@ -170,34 +170,52 @@ export class ProblemsProvider
   private async loadProblems(
     difficulty: DifficultyFilter
   ): Promise<ProblemSummary[]> {
-    const lc = await this.sessionManager.getLeetCodeClient();
-    const allQuestions: ProblemSummary[] = [];
-    const limit = 50;
-    let offset = 0;
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: false,
+      },
+      async (progress) => {
+        const lc = await this.sessionManager.getLeetCodeClient();
+        const allQuestions: ProblemSummary[] = [];
+        const limit = 50;
+        let offset = 0;
+        let total: number | undefined;
 
-    while (true) {
-      const filters =
-        difficulty === "All"
-          ? {}
-          : {
-            difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
-          };
-      const result = await lc.problems({ limit, offset, filters });
-      const questions = result?.questions ?? [];
+        while (true) {
+          const filters =
+            difficulty === "All"
+              ? {}
+              : {
+                difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
+              };
+          const result = await lc.problems({ limit, offset, filters });
+          const questions = result?.questions ?? [];
+          total = result.total;
 
-      if (!questions.length) {
-        break;
+          if (!questions.length) {
+            break;
+          }
+
+          allQuestions.push(...questions);
+          offset += questions.length;
+
+          progress.report({
+            message: `Loaded ${allQuestions.length} / ${total} problems`,
+          });
+
+          if (questions.length < limit || allQuestions.length >= total) {
+            break;
+          }
+        }
+
+        progress.report({
+          message: `Done — ${allQuestions.length} problems loaded`,
+        });
+
+        return allQuestions;
       }
-
-      allQuestions.push(...questions);
-      offset += questions.length;
-
-      if (questions.length < limit || allQuestions.length >= result.total) {
-        break;
-      }
-    }
-
-    return allQuestions;
+    );
   }
 
   private getProblemStatusIcon(
