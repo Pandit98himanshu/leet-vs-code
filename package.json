@@ -11,7 +11,7 @@
   "publisher": "pandithimanshu",
   "license": "ISC",
   "engines": {
-    "vscode": "^1.119.1"
+    "vscode": "^1.107.0"
   },
   "activationEvents": [
     "onStartupFinished",
@@ -149,7 +149,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
-    "@types/vscode": "^1.119.1",
+    "@types/vscode": "^1.107.0",
     "@vscode/vsce": "^3.9.2",
     "@types/react":"^19.2.17",
     "esbuild": "^0.28.1",
