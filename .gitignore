@@ -1,7 +1,11 @@
 dist/
 out/
 .output/
+.output/*
 node_modules/
 *.vsix
 tsconfig.json
 package-lock.json
+.DS_Store
+.Trash
+.workspace_rag
