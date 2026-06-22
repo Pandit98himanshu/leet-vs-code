@@ -18,7 +18,6 @@
     "onView:leetvscodeProblems",
     "onCommand:leetvscode.showDailyChallenge",
     "onCommand:leetvscode.searchProblem",
-    "onCommand:leetvscode.browseProblems",
     "onCommand:leetvscode.viewAllProblems",
     "onCommand:leetvscode.showUserProfile",
     "onCommand:leetvscode.openSolution",
@@ -57,11 +56,6 @@
         "command": "leetvscode.searchProblem",
         "title": "Search Problem",
         "icon": "$(search)"
-      },
-      {
-        "command": "leetvscode.browseProblems",
-        "title": "LeetCode: Browse Problems",
-        "icon": "$(list-unordered)"
       },
       {
         "command": "leetvscode.viewAllProblems",
@@ -111,14 +105,19 @@
           "group": "navigation@2"
         },
         {
+          "command": "leetvscode.showUserProfile",
+          "when": "view == leetvscodeProblems",
+          "group": "navigation@3"
+        },
+        {
           "command": "leetvscode.setSession",
           "when": "view == leetvscodeProblems && !leetvscode:hasSession",
-          "group": "navigation@3"
+          "group": "navigation@4"
         },
         {
           "command": "leetvscode.clearSession",
           "when": "view == leetvscodeProblems && leetvscode:hasSession",
-          "group": "navigation@3"
+          "group": "navigation@4"
         }
       ]
     },
@@ -151,7 +150,7 @@
     "@types/node": "^25.9.3",
     "@types/vscode": "^1.107.0",
     "@vscode/vsce": "^3.9.2",
-    "@types/react":"^19.2.17",
+    "@types/react": "^19.2.17",
     "esbuild": "^0.28.1",
     "typescript": "^6.0.3"
   }

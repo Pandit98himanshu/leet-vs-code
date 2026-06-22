@@ -124,116 +124,13 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
-  
+
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "leetvscode.viewAllProblems",
       async () => {
         problemsProvider.showAllProblems();
         await vscode.commands.executeCommand("leetvscodeProblems.focus");
-      }
-    )
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      "leetvscode.browseProblems",
-      async () => {
-        const config = vscode.workspace.getConfiguration("leetvscode");
-        const defaultDifficulty = config.get<string>(
-          "defaultDifficulty",
-          "All"
-        );
-
-        const difficulty = await vscode.window.showQuickPick(
-          ["All", "Easy", "Medium", "Hard"],
-          {
-            placeHolder: "Select difficulty",
-            title: "Browse LeetCode Problems",
-          }
-        );
-        if (difficulty === undefined) {
-          return;
-        }
-
-        await vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: "Loading problems...",
-            cancellable: false,
-          },
-          async () => {
-            try {
-              const lc = await sessionManager.getLeetCodeClient();
-              const filter =
-                difficulty === "All"
-                  ? {}
-                  : {
-                      difficulty: difficulty.toUpperCase() as
-                        | "EASY"
-                        | "MEDIUM"
-                        | "HARD",
-                    };
-              const result = await lc.problems({
-                limit: 50,
-                offset: 0,
-                filters: filter,
-              });
-
-              if (!result?.questions?.length) {
-                vscode.window.showInformationMessage("No problems found.");
-                return;
-              }
-
-              const items: vscode.QuickPickItem[] = result.questions.map(
-                (q) => ({
-                  label: `$(symbol-numeric) ${q.questionFrontendId}. ${q.title}`,
-                  description: q.difficulty,
-                  detail: q.topicTags.map((t) => t.name).join(", "),
-                })
-              );
-
-              const picked = await vscode.window.showQuickPick(items, {
-                placeHolder: `Showing ${result.questions.length} problems — select one to open`,
-                title: `LeetCode Problems (${difficulty})`,
-                matchOnDescription: true,
-                matchOnDetail: true,
-              });
-
-              if (!picked) {
-                return;
-              }
-
-              // Extract slug from the selected problem
-              const idx = items.indexOf(picked);
-              const question = result.questions[idx];
-
-              await vscode.window.withProgress(
-                {
-                  location: vscode.ProgressLocation.Notification,
-                  title: `Loading "${question.title}"...`,
-                  cancellable: false,
-                },
-                async () => {
-                  try {
-                    const problem = await lc.problem(question.titleSlug);
-                    if (problem) {
-                      ProblemPanel.createOrShow(context.extensionUri, problem);
-                    }
-                  } catch (err) {
-                    vscode.window.showErrorMessage(
-                      `Failed to load problem: ${String(err)}`
-                    );
-                  }
-                }
-              );
-            } catch (err) {
-              vscode.window.showErrorMessage(
-                `Failed to browse problems: ${String(err)}`
-              );
-            }
-          }
-        );
       }
     )
   );
@@ -523,7 +420,7 @@ export function activate(context: vscode.ExtensionContext) {
   );
 }
 
-export function deactivate() {}
+export function deactivate() { }
 
 async function pickProblem(lc: LeetCode): Promise<ProblemForEditor | undefined> {
   const slug = await vscode.window.showInputBox({
@@ -657,8 +554,8 @@ function showSubmissionResult(
     result.totalCorrect !== undefined && result.totalTestcases !== undefined
       ? `${result.totalCorrect}/${result.totalTestcases} testcases passed`
       : undefined,
-    result.compileError? `\nCompile Error: ${result.compileError}` : undefined,
-    result.runtimeError? `\nRuntime Error: ${result.runtimeError}` : undefined,
+    result.compileError ? `\nCompile Error: ${result.compileError}` : undefined,
+    result.runtimeError ? `\nRuntime Error: ${result.runtimeError}` : undefined,
     result.lastTestcase ? `\nTestcase Failed: ${result.lastTestcase}` : undefined,
     result.expectedOutput ? `\nExpected Output: ${result.expectedOutput}` : undefined,
     result.codeOutput ? `\nYour Output: ${result.codeOutput}` : undefined,

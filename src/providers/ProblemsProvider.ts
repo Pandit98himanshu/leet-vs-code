@@ -28,8 +28,7 @@ export class ProblemItem extends vscode.TreeItem {
 }
 
 export class ProblemsProvider
-  implements vscode.TreeDataProvider<ProblemItem>
-{
+  implements vscode.TreeDataProvider<ProblemItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<
     ProblemItem | undefined | null | void
   >();
@@ -38,7 +37,7 @@ export class ProblemsProvider
   private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
   private expandAllProblems = false;
 
-  constructor(private readonly sessionManager: SessionManager) {}
+  constructor(private readonly sessionManager: SessionManager) { }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
@@ -70,16 +69,6 @@ export class ProblemsProvider
 
     return [
       new ProblemItem(
-        "Browse Problems",
-        {
-          command: "leetvscode.browseProblems",
-          title: "Browse Problems",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        "list-unordered",
-        "Filter by difficulty"
-      ),
-      new ProblemItem(
         "View All Problems",
         {
           command: "leetvscode.viewAllProblems",
@@ -101,16 +90,6 @@ export class ProblemsProvider
         vscode.TreeItemCollapsibleState.None,
         hasSession ? "cloud-upload" : "lock",
         "Active editor"
-      ),
-      new ProblemItem(
-        "User Profile",
-        {
-          command: "leetvscode.showUserProfile",
-          title: "Show User Profile",
-        },
-        vscode.TreeItemCollapsibleState.None,
-        "account",
-        "Any public user"
       ),
       new ProblemItem(
         hasSession ? "My Submissions" : "My Submissions (login required)",
@@ -234,8 +213,8 @@ export class ProblemsProvider
         difficulty === "All"
           ? {}
           : {
-              difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
-            };
+            difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
+          };
       const result = await lc.problems({ limit, offset, filters });
       const questions = result?.questions ?? [];
 
