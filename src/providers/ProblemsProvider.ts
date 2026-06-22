@@ -219,7 +219,7 @@ export class ProblemsProvider
           arguments: [question.titleSlug],
         },
         vscode.TreeItemCollapsibleState.None,
-        this.getDifficultyIcon(question.difficulty),
+        this.getProblemStatusIcon(question.status),
         tags,
         "problem",
         difficulty,
@@ -299,5 +299,20 @@ export class ProblemsProvider
       default:
         return "list-unordered";
     }
+  }
+
+  private getProblemStatusIcon(
+    status: string | null | undefined
+  ): string | undefined {
+    if (!status) {
+      return "list-map";    // no icon for unsolved problems
+    }
+
+    const normalizedStatus = status.toLowerCase();
+    if (normalizedStatus === "ac" || normalizedStatus === "accepted") {
+      return "check";
+    }
+
+    return "error";
   }
 }
