@@ -346,75 +346,8 @@ export function activate(context: vscode.ExtensionContext) {
           return;
         }
 
-        const lc = await sessionManager.getLeetCodeClient();
-        await vscode.window.withProgress(
-          {
-            location: vscode.ProgressLocation.Notification,
-            title: "Fetching your recent submissions...",
-            cancellable: false,
-          },
-          async () => {
-            try {
-              const submissions = await lc.submissions({ limit: 20, offset: 0 });
-              if (!submissions.length) {
-                vscode.window.showInformationMessage(
-                  "No submissions found."
-                );
-                return;
-              }
-
-              const items: vscode.QuickPickItem[] = submissions.map(
-                (s) => {
-                  const icon =
-                    s.statusDisplay === "Accepted"
-                      ? "$(pass-filled)"
-                      : "$(error)";
-                  return {
-                    label: `${icon} ${s.title}`,
-                    description: `${s.statusDisplay} · ${s.lang}`,
-                    detail: `Runtime: ${s.runtime}ms · Memory: ${s.memory}MB · ${s.time}`,
-                  };
-                }
-              );
-
-              const picked = await vscode.window.showQuickPick(items, {
-                placeHolder: "Select a submission to view the problem",
-                title: "My Recent Submissions (last 20)",
-              });
-
-              if (!picked) {
-                return;
-              }
-
-              const idx = items.indexOf(picked);
-              const sub = submissions[idx];
-
-              await vscode.window.withProgress(
-                {
-                  location: vscode.ProgressLocation.Notification,
-                  title: `Loading "${sub.title}"...`,
-                  cancellable: false,
-                },
-                async () => {
-                  try {
-                    const problem = await lc.problem(sub.titleSlug);
-                    if (problem) {
-                      ProblemPanel.createOrShow(context.extensionUri, problem);
-                    }
-                  } catch (err) {
-                    vscode.window.showErrorMessage(
-                      `Failed to load problem: ${String(err)}`
-                    );
-                  }
-                }
-              );
-            } catch (err) {
-              vscode.window.showErrorMessage(
-                `Failed to fetch submissions: ${String(err)}`
-              );
-            }
-          }
-        );
+        problemsProvider.showMySubmissions();
+        await vscode.commands.executeCommand("leetvscodeProblems.focus");
       }
     )
   );

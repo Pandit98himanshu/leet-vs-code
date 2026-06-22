@@ -89,7 +89,7 @@
       {
         "command": "leetvscode.showMySubmissions",
         "title": "Show my recent Submissions",
-        "icon": "$(pass)"
+        "icon": "$(history)"
       }
     ],
     "menus": {

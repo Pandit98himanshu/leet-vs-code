@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
-import type { ProblemList } from "leetcode-query";
+import type { ProblemList, Submission } from "leetcode-query";
 import { SessionManager } from "../session/SessionManager";
 
 type DifficultyFilter = "All" | "Easy" | "Medium" | "Hard";
 type ProblemSummary = ProblemList["questions"][number];
-type ProblemItemKind = "action" | "allProblems" | "problem";
+type ProblemItemKind = "action" | "allProblems" | "mySubmissions" | "submission" | "problem";
 
 export class ProblemItem extends vscode.TreeItem {
   constructor(
@@ -36,6 +36,7 @@ export class ProblemsProvider
   private readonly problemCache = new Map<DifficultyFilter, ProblemSummary[]>();
   private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
   private expandAllProblems = false;
+  private expandMySubmissions = false;
 
   constructor(private readonly sessionManager: SessionManager) { }
 
@@ -48,6 +49,11 @@ export class ProblemsProvider
     this.refresh();
   }
 
+  showMySubmissions(): void {
+    this.expandMySubmissions = true;
+    this.refresh();
+  }
+
   getTreeItem(element: ProblemItem): vscode.TreeItem {
     return element;
   }
@@ -56,6 +62,10 @@ export class ProblemsProvider
     if (element) {
       if (element.kind === "allProblems") {
         return this.getProblemItems("All");
+      }
+
+      if (element.kind === "mySubmissions") {
+        return this.getSubmissionItems();
       }
 
       return [];
@@ -76,14 +86,15 @@ export class ProblemsProvider
         "allProblems"
       ),
       new ProblemItem(
-        hasSession ? "My Submissions" : "My Submissions (login required)",
+        "My Submissions",
         {
           command: "leetvscode.showMySubmissions",
           title: "Show My Submissions",
         },
-        vscode.TreeItemCollapsibleState.None,
-        hasSession ? "pass" : "lock",
-        hasSession ? "Last 20" : "Set session first"
+        this.expandMySubmissions ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+        "history",
+        "Last 20",
+        "mySubmissions"
       ),
     ];
   }
@@ -216,6 +227,59 @@ export class ProblemsProvider
         return allQuestions;
       }
     );
+  }
+
+  private async getSubmissionItems(): Promise<ProblemItem[]> {
+    let submissions: Submission[];
+    try {
+      submissions = await (await this.sessionManager.getLeetCodeClient()).submissions();
+    } catch (err) {
+      vscode.window.showErrorMessage(
+        `Failed to load submissions: ${String(err)}`
+      );
+      return [
+        new ProblemItem(
+          "Failed to load submissions",
+          undefined,
+          vscode.TreeItemCollapsibleState.None,
+          "error"
+        ),
+      ];
+    }
+
+    if (!submissions.length) {
+      return [
+        new ProblemItem(
+          "No submissions found",
+          undefined,
+          vscode.TreeItemCollapsibleState.None,
+          "info"
+        ),
+      ];
+    }
+
+    return submissions.map((s) => {
+      const icon = s.statusDisplay === "Accepted" ? "check" : "close";
+      const label = `${s.title}`;
+      const description = `${s.statusDisplay} · ${s.lang}`;
+      const detail = `Runtime: ${s.runtime}ms · Memory: ${s.memory}MB · ${new Date(s.timestamp).toLocaleString()}`;
+
+      const item = new ProblemItem(
+        label,
+        {
+          command: "leetvscode.searchProblem",
+          title: "Open Problem",
+          arguments: [s.titleSlug],
+        },
+        vscode.TreeItemCollapsibleState.None,
+        icon,
+        description,
+        "submission"
+      );
+
+      item.tooltip = detail;
+      return item;
+    });
   }
 
   private getProblemStatusIcon(
