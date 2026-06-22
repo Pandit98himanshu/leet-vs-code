@@ -39,7 +39,7 @@ export class ProblemPanel {
 
     const panel = vscode.window.createWebviewPanel(
       "leetcodeProblem",
-      `LeetCode: ${problem.title}`,
+      `${problem.title}`,
       column,
       { enableScripts: true, retainContextWhenHidden: true }
     );
@@ -83,7 +83,7 @@ export class ProblemPanel {
   }
 
   private _update(problem: Problem, dailyDate?: string) {
-    this._panel.title = `LeetCode: ${problem.title}`;
+    this._panel.title = `${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}`;
     this._panel.webview.html = this._getHtml(problem, dailyDate);
   }
 

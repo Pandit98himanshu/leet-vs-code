@@ -35,10 +35,7 @@ export class ProblemsProvider
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
   private readonly problemCache = new Map<DifficultyFilter, ProblemSummary[]>();
-  private readonly loadingProblems = new Map<
-    DifficultyFilter,
-    Promise<ProblemSummary[]>
-  >();
+  private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
   private expandAllProblems = false;
 
   constructor(private readonly sessionManager: SessionManager) {}
@@ -91,7 +88,7 @@ export class ProblemsProvider
         this.expandAllProblems
           ? vscode.TreeItemCollapsibleState.Expanded
           : vscode.TreeItemCollapsibleState.Collapsed,
-        "library-list",
+        "list-tree",
         "By difficulty",
         "allProblems"
       ),
@@ -112,7 +109,7 @@ export class ProblemsProvider
           title: "Show User Profile",
         },
         vscode.TreeItemCollapsibleState.None,
-        "person",
+        "account",
         "Any public user"
       ),
       new ProblemItem(
@@ -188,7 +185,7 @@ export class ProblemsProvider
           arguments: [question.titleSlug],
         },
         vscode.TreeItemCollapsibleState.None,
-        this.getProblemStatusIcon(question.status),
+        this.getProblemStatusIcon(question.status, question.isPaidOnly),
         tags,
         "problem",
         difficulty,
@@ -271,10 +268,15 @@ export class ProblemsProvider
   }
 
   private getProblemStatusIcon(
-    status: string | null | undefined
+    status: string | null | undefined,
+    isPaidOnly: boolean | undefined,
   ): string | undefined {
+    if (isPaidOnly && !status) {
+      return "lock";
+    }
+
     if (!status) {
-      return "list-map";    // no icon for unsolved problems
+      return "list-map";    // no icon for unattempted problems
     }
 
     const normalizedStatus = status.toLowerCase();
