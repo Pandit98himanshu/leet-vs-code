@@ -59,21 +59,21 @@
       },
       {
         "command": "leetvscode.viewAllProblems",
-        "title": "LeetCode: View All Problems"
+        "title": "View All Problems"
       },
       {
         "command": "leetvscode.showUserProfile",
-        "title": "LeetCode: Show User Profile",
+        "title": "Show User Profile",
         "icon": "$(account)"
       },
       {
         "command": "leetvscode.openSolution",
-        "title": "LeetCode: Open Solution File",
+        "title": "Open Solution File",
         "icon": "$(file-code)"
       },
       {
         "command": "leetvscode.submitSolution",
-        "title": "LeetCode: Submit Solution",
+        "title": "Submit Solution",
         "icon": "$(cloud-upload)"
       },
       {
@@ -88,7 +88,7 @@
       },
       {
         "command": "leetvscode.showMySubmissions",
-        "title": "LeetCode: Show my recent Submissions",
+        "title": "Show my recent Submissions",
         "icon": "$(pass)"
       }
     ],
