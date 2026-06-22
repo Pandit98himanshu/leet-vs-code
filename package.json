@@ -104,22 +104,22 @@
         {
           "command": "leetvscode.showDailyChallenge",
           "when": "view == leetvscodeProblems",
-          "group": "navigation"
+          "group": "navigation@1"
         },
         {
           "command": "leetvscode.searchProblem",
           "when": "view == leetvscodeProblems",
-          "group": "navigation"
+          "group": "navigation@2"
         },
         {
           "command": "leetvscode.setSession",
           "when": "view == leetvscodeProblems && !leetvscode:hasSession",
-          "group": "navigation"
+          "group": "navigation@3"
         },
         {
           "command": "leetvscode.clearSession",
           "when": "view == leetvscodeProblems && leetvscode:hasSession",
-          "group": "navigation"
+          "group": "navigation@3"
         }
       ]
     },
