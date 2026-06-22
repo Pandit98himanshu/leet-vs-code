@@ -4,7 +4,7 @@ import { SessionManager } from "../session/SessionManager";
 
 type DifficultyFilter = "All" | "Easy" | "Medium" | "Hard";
 type ProblemSummary = ProblemList["questions"][number];
-type ProblemItemKind = "action" | "allProblems" | "difficulty" | "problem";
+type ProblemItemKind = "action" | "allProblems" | "problem";
 
 export class ProblemItem extends vscode.TreeItem {
   constructor(
@@ -55,11 +55,7 @@ export class ProblemsProvider
   async getChildren(element?: ProblemItem): Promise<ProblemItem[]> {
     if (element) {
       if (element.kind === "allProblems") {
-        return this.getDifficultyItems();
-      }
-
-      if (element.kind === "difficulty" && element.difficulty) {
-        return this.getProblemItems(element.difficulty);
+        return this.getProblemItems("All");
       }
 
       return [];
@@ -74,11 +70,9 @@ export class ProblemsProvider
           command: "leetvscode.viewAllProblems",
           title: "View All Problems",
         },
-        this.expandAllProblems
-          ? vscode.TreeItemCollapsibleState.Expanded
-          : vscode.TreeItemCollapsibleState.Collapsed,
-        "list-tree",
-        "By difficulty",
+        this.expandAllProblems ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed,
+        "list-unordered",
+        undefined,
         "allProblems"
       ),
       new ProblemItem(
@@ -102,23 +96,6 @@ export class ProblemsProvider
         hasSession ? "Last 20" : "Set session first"
       ),
     ];
-  }
-
-  private getDifficultyItems(): ProblemItem[] {
-    const difficulties: DifficultyFilter[] = ["All", "Easy", "Medium", "Hard"];
-
-    return difficulties.map((difficulty) => {
-      const cached = this.problemCache.get(difficulty);
-      return new ProblemItem(
-        difficulty,
-        undefined,
-        vscode.TreeItemCollapsibleState.Collapsed,
-        this.getDifficultyIcon(difficulty),
-        cached ? `${cached.length} problems` : `Expand to load all ${difficulty} problems`,
-        "difficulty",
-        difficulty
-      );
-    });
   }
 
   private async getProblemItems(
@@ -231,19 +208,6 @@ export class ProblemsProvider
     }
 
     return allQuestions;
-  }
-
-  private getDifficultyIcon(difficulty: string): string {
-    switch (difficulty) {
-      case "Easy":
-        return "check";
-      case "Medium":
-        return "warning";
-      case "Hard":
-        return "error";
-      default:
-        return "list-unordered";
-    }
   }
 
   private getProblemStatusIcon(
