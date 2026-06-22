@@ -117,6 +117,16 @@ export function activate(context: vscode.ExtensionContext) {
       }
     )
   );
+  
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "leetvscode.viewAllProblems",
+      async () => {
+        problemsProvider.showAllProblems();
+        await vscode.commands.executeCommand("leetvscodeProblems.focus");
+      }
+    )
+  );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(

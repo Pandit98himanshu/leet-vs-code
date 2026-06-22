@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -19,6 +19,7 @@
     "onCommand:leetvscode.showDailyChallenge",
     "onCommand:leetvscode.searchProblem",
     "onCommand:leetvscode.browseProblems",
+    "onCommand:leetvscode.viewAllProblems",
     "onCommand:leetvscode.showUserProfile",
     "onCommand:leetvscode.openSolution",
     "onCommand:leetvscode.submitSolution",
@@ -60,6 +61,11 @@
         "command": "leetvscode.browseProblems",
         "title": "LeetCode: Browse Problems",
         "icon": "$(list-unordered)"
+      },
+      {
+        "command": "leetvscode.viewAllProblems",
+        "title": "LeetCode: View All Problems",
+        "icon": "$(list-tree)"
       },
       {
         "command": "leetvscode.showUserProfile",
