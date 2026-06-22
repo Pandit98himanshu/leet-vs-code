@@ -162,7 +162,7 @@ export class ProblemPanel {
       : '<span class="muted">None</span>';
 
     const dailyBadge = dailyDate
-      ? `<span class="daily-badge">📅 Daily Challenge · ${dailyDate}</span>`
+      ? `<span>Daily Question · ${dailyDate}</span>`
       : "";
 
     return /* html */ `<!DOCTYPE html>
@@ -206,7 +206,6 @@ export class ProblemPanel {
       gap: 4px;
     }
     .difficulty { background: ${difficultyColor}22; color: ${difficultyColor}; border: 1px solid ${difficultyColor}55; }
-    .daily-badge { background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
     .stat-badge { background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
     .tag {
       display: inline-block;
@@ -255,13 +254,13 @@ export class ProblemPanel {
     .copy-notice { font-size: 0.8em; color: var(--vscode-notificationsInfoIcon-foreground); margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
     .copy-notice.show { opacity: 1; }
     .muted { opacity: 0.55; font-style: italic; }
-    .open-link { float: right; margin-top: -2px; }
+    .open-link { margin-top: -2px; }
   </style>
 </head>
 <body>
   <h1>
     ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
-    <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗ LeetCode</a>
+    <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
   </h1>
 
   <div class="meta">

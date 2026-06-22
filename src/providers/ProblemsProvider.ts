@@ -282,6 +282,6 @@ export class ProblemsProvider
       return "check";
     }
 
-    return "error";
+    return "target";
   }
 }

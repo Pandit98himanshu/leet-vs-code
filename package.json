@@ -51,7 +51,7 @@
       {
         "command": "leetvscode.showDailyChallenge",
         "title": "Show Daily Challenge",
-        "icon": "$(calendar)"
+        "icon": "$(flame)"
       },
       {
         "command": "leetvscode.searchProblem",
@@ -65,13 +65,12 @@
       },
       {
         "command": "leetvscode.viewAllProblems",
-        "title": "LeetCode: View All Problems",
-        "icon": "$(list-tree)"
+        "title": "LeetCode: View All Problems"
       },
       {
         "command": "leetvscode.showUserProfile",
         "title": "LeetCode: Show User Profile",
-        "icon": "$(person)"
+        "icon": "$(account)"
       },
       {
         "command": "leetvscode.openSolution",
