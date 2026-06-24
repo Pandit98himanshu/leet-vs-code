@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import * as path from "path";
 import { getSolutionsDir } from "./paths";
-import { LeetCode } from "leetcode-query";
+import { LeetCode, ProblemList } from "leetcode-query";
 import { ProblemPanel } from "./panels/ProblemPanel";
 import { UserProfilePanel } from "./panels/UserProfilePanel";
 import { ProblemsProvider } from "./providers/ProblemsProvider";
@@ -101,28 +101,37 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       "leetvscode.searchProblem",
       async (slugArg?: unknown) => {
-        const slug =
+        const input =
           (typeof slugArg === "string" ? slugArg : undefined) ??
           (await vscode.window.showInputBox({
-            prompt: "Enter problem title slug (e.g. two-sum, longest-substring)",
-            placeHolder: "two-sum",
+            placeHolder: "Search Problem",
             validateInput: (v) =>
-              v.trim() ? null : "Please enter a problem slug",
+              v.trim() ? null : "Please enter a problem number, title, or slug",
           }));
-        if (!slug) {
+        if (!input) {
           return;
         }
 
+        const trimmed = input.trim();
         const lc = await sessionManager.getLeetCodeClient();
+
         await vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: `Fetching problem "${slug}"...`,
+            title: `Searching for "${trimmed}"...`,
             cancellable: false,
           },
           async () => {
             try {
-              const problem = await lc.problem(slug.trim().toLowerCase());
+              const slug = await resolveToSlug(trimmed, lc);
+              if (!slug) {
+                vscode.window.showErrorMessage(
+                  `No problem found matching "${trimmed}".`
+                );
+                return;
+              }
+
+              const problem = await lc.problem(slug);
               if (!problem) {
                 vscode.window.showErrorMessage(
                   `Problem "${slug}" not found.`
@@ -371,6 +380,88 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
+
+type ProblemSummary = ProblemList["questions"][number];
+
+let cachedProblems: ProblemSummary[] | undefined;
+async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
+  if (cachedProblems) {
+    return cachedProblems;
+  }
+
+  const all: ProblemSummary[] = [];
+  const limit = 100;
+  let offset = 0;
+
+  while (true) {
+    const result = await lc.problems({ limit, offset });
+    const questions = result?.questions ?? [];
+    if (!questions.length) {
+      break;
+    }
+    all.push(...questions);
+    offset += questions.length;
+    if (questions.length < limit || all.length >= result.total) {
+      break;
+    }
+  }
+
+  cachedProblems = all;
+  return all;
+}
+
+async function resolveToSlug(
+  input: string,
+  lc: LeetCode
+): Promise<string | undefined> {
+  // get problem slug from questionFrontendId
+  if (/^\d+$/.test(input)) {
+    const problems = await fetchAllProblems(lc);
+    const match = problems.find((p) => p.questionFrontendId === input);
+    return match?.titleSlug;
+  }
+
+  // return slug as it is
+  if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(input)) {
+    return input;
+  }
+
+  // get problem slug from problem title
+  const problems = await fetchAllProblems(lc);
+  const lowerInput = input.toLowerCase();
+
+  // Exact title match (case-insensitive)
+  const exact = problems.find(
+    (p) => p.title.toLowerCase() === lowerInput
+  );
+  if (exact) {
+    return exact.titleSlug;
+  }
+
+  // Substring match — collect all matches and let the user pick if ambiguous
+  const substring = problems.filter((p) =>
+    p.title.toLowerCase().includes(lowerInput)
+  );
+
+  if (substring.length === 1) {
+    return substring[0].titleSlug;
+  }
+
+  if (substring.length > 1) {
+    const picked = await vscode.window.showQuickPick(
+      substring.map((p) => ({
+        label: `${p.questionFrontendId}. ${p.title}`,
+        description: p.titleSlug,
+        slug: p.titleSlug,
+      })),
+      { placeHolder: "Multiple matches found" }
+    );
+    return picked?.slug;
+  }
+
+  // fallback: treat as slug
+  return input.toLowerCase().replace(/\s+/g, "-");
+}
 
 async function pickProblem(lc: LeetCode): Promise<ProblemForEditor | undefined> {
   const slug = await vscode.window.showInputBox({
