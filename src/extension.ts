@@ -99,9 +99,9 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand(
       "leetvscode.searchProblem",
-      async (slugArg?: string) => {
+      async (slugArg?: unknown) => {
         const slug =
-          slugArg ??
+          (typeof slugArg === "string" ? slugArg : undefined) ??
           (await vscode.window.showInputBox({
             prompt: "Enter problem title slug (e.g. two-sum, longest-substring)",
             placeHolder: "two-sum",
