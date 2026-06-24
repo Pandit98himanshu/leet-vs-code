@@ -383,12 +383,18 @@ export function deactivate() { }
 
 type ProblemSummary = ProblemList["questions"][number];
 
-async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
+interface SearchIndex {
+  byId: Record<string, string>;
+  byTitle: Record<string, string>;
+  items: { id: string; title: string; slug: string }[];
+}
+
+async function getOrBuildSearchIndex(lc: LeetCode): Promise<SearchIndex> {
   const cachePath = vscode.Uri.file(getProblemSearchCachePath());
   try {
     const data = await vscode.workspace.fs.readFile(cachePath);
-    const parsed = JSON.parse(Buffer.from(data).toString("utf8"));
-    if (parsed && parsed.length > 0) {
+    const parsed = JSON.parse(Buffer.from(data).toString("utf8")) as SearchIndex;
+    if (parsed && parsed.items && parsed.items.length > 0) {
       return parsed;
     }
   } catch (err) {
@@ -412,17 +418,33 @@ async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
     }
   }
 
+  const index: SearchIndex = {
+    byId: {},
+    byTitle: {},
+    items: [],
+  };
+
+  for (const p of all) {
+    index.byId[p.questionFrontendId] = p.titleSlug;
+    index.byTitle[p.title.toLowerCase()] = p.titleSlug;
+    index.items.push({
+      id: p.questionFrontendId,
+      title: p.title,
+      slug: p.titleSlug,
+    });
+  }
+
   try {
     await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(getProblemSearchCachePath())));
     await vscode.workspace.fs.writeFile(
       cachePath,
-      Buffer.from(JSON.stringify(all), "utf8")
+      Buffer.from(JSON.stringify(index), "utf8")
     );
   } catch (err) {
     vscode.window.showErrorMessage(`Failed to write search index cache: ${formatError(err)}`);
   }
 
-  return all;
+  return index;
 }
 
 async function resolveToSlug(
@@ -431,9 +453,8 @@ async function resolveToSlug(
 ): Promise<string | undefined> {
   // get problem slug from questionFrontendId
   if (/^\d+$/.test(input)) {
-    const problems = await fetchAllProblems(lc);
-    const match = problems.find((p) => p.questionFrontendId === input);
-    return match?.titleSlug;
+    const index = await getOrBuildSearchIndex(lc);
+    return index.byId[input];
   }
 
   // return slug as it is
@@ -442,32 +463,29 @@ async function resolveToSlug(
   }
 
   // get problem slug from problem title
-  const problems = await fetchAllProblems(lc);
+  const index = await getOrBuildSearchIndex(lc);
   const lowerInput = input.toLowerCase();
 
   // Exact title match (case-insensitive)
-  const exact = problems.find(
-    (p) => p.title.toLowerCase() === lowerInput
-  );
-  if (exact) {
-    return exact.titleSlug;
+  if (index.byTitle[lowerInput]) {
+    return index.byTitle[lowerInput];
   }
 
   // Substring match — collect all matches and let the user pick if ambiguous
-  const substring = problems.filter((p) =>
+  const substring = index.items.filter((p) =>
     p.title.toLowerCase().includes(lowerInput)
   );
 
   if (substring.length === 1) {
-    return substring[0].titleSlug;
+    return substring[0].slug;
   }
 
   if (substring.length > 1) {
     const picked = await vscode.window.showQuickPick(
       substring.map((p) => ({
-        label: `${p.questionFrontendId}. ${p.title}`,
-        description: p.titleSlug,
-        slug: p.titleSlug,
+        label: `${p.id}. ${p.title}`,
+        description: p.slug,
+        slug: p.slug,
       })),
       { placeHolder: "Multiple matches found" }
     );
