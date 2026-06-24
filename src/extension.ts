@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as os from "os";
 import * as path from "path";
+import { getSolutionsDir } from "./paths";
 import { LeetCode } from "leetcode-query";
 import { ProblemPanel } from "./panels/ProblemPanel";
 import { UserProfilePanel } from "./panels/UserProfilePanel";
@@ -416,12 +416,7 @@ async function openSolutionDocument(
     return document;
   }
 
-  const defaultPath = path.join(os.homedir(), ".leetvscode", "output", "solutions");
-  const configuredPath = vscode.workspace
-    .getConfiguration("leetvscode")
-    .get<string>("solutionsPath", "");
-  const solutionsPath = configuredPath || defaultPath;
-  const folder = vscode.Uri.file(solutionsPath);
+  const folder = vscode.Uri.file(getSolutionsDir());
 
   await vscode.workspace.fs.createDirectory(folder);
 

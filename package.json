@@ -152,10 +152,10 @@
           ],
           "description": "Default difficulty filter for prolem browsing"
         },
-        "leetvscode.solutionsPath": {
+        "leetvscode.rootDir": {
           "type": "string",
           "default": "",
-          "description": "Absolute path where solution files are saved. Leave empty to use the default (~/.leetvscode/output/solutions)."
+          "description": "Root directory for all LeetVSCode storage (solutions, cache, etc.). Leave empty to use the default (~/.leetvscode)."
         }
       }
     }
