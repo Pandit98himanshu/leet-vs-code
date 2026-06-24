@@ -92,35 +92,35 @@ export class ProblemPanel {
       problem.difficulty === "Easy"
         ? "#00b8a3"
         : problem.difficulty === "Medium"
-        ? "#ffc01e"
-        : "#ff375f";
+          ? "#ffc01e"
+          : "#ff375f";
 
     // Parse stats JSON safely
     let acRate = "N/A";
-    try {
-      if (problem.stats) {
-        const stats = JSON.parse(problem.stats);
-        acRate = stats.acRate ?? "N/A";
-      }
-    } catch {
-      // ignore
+
+    if (problem.stats) {
+      const stats = JSON.parse(problem.stats);
+      acRate = stats.acRate ?? "N/A";
     }
 
     // Parse similar questions safely
     let similarQuestions: { title: string; titleSlug: string; difficulty: string }[] = [];
-    try {
-      if (problem.similarQuestions) {
-        similarQuestions = JSON.parse(problem.similarQuestions);
-      }
-    } catch {
-      // ignore
+    if (problem.similarQuestions) {
+      similarQuestions = JSON.parse(problem.similarQuestions);
     }
 
     // Code snippets select options
-    const snippetOptions = (problem.codeSnippets ?? [])
+    const defaultLang = vscode.workspace
+      .getConfiguration("leetvscode")
+      .get<string>("defaultLanguage", "");
+    const snippets = problem.codeSnippets ?? [];
+    const defaultIndex = defaultLang
+      ? snippets.findIndex((s) => s.langSlug === defaultLang)
+      : -1;
+    const snippetOptions = snippets
       .map(
         (s, i) =>
-          `<option value="${i}">${escapeHtml(s.lang)}</option>`
+          `<option value="${i}"${i === defaultIndex ? " selected" : ""}>${escapeHtml(s.lang)}</option>`
       )
       .join("");
 
@@ -144,21 +144,21 @@ export class ProblemPanel {
     // Hints
     const hintsHtml = problem.hints?.length
       ? problem.hints
-          .map(
-            (h, i) =>
-              `<details class="hint"><summary>Hint ${i + 1}</summary><p>${h}</p></details>`
-          )
-          .join("")
+        .map(
+          (h, i) =>
+            `<details class="hint"><summary>Hint ${i + 1}</summary><p>${h}</p></details>`
+        )
+        .join("")
       : '<p class="muted">No hints available.</p>';
 
     // Similar questions
     const similarHtml = similarQuestions.length
       ? similarQuestions
-          .map(
-            (q) =>
-              `<span class="tag" style="cursor:pointer" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)} <small>(${escapeHtml(q.difficulty)})</small></span>`
-          )
-          .join(" ")
+        .map(
+          (q) =>
+            `<span class="tag" style="cursor:pointer" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)} <small>(${escapeHtml(q.difficulty)})</small></span>`
+        )
+        .join(" ")
       : '<span class="muted">None</span>';
 
     const dailyBadge = dailyDate
@@ -290,9 +290,8 @@ export class ProblemPanel {
   <hr class="divider" />
 
   <h2>Code Snippets</h2>
-  ${
-    (problem.codeSnippets ?? []).length > 0
-      ? `<div class="snippet-bar">
+  ${(problem.codeSnippets ?? []).length > 0
+        ? `<div class="snippet-bar">
            <select id="langSelect" onchange="updateSnippet()">${snippetOptions}</select>
            <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
            <button class="btn" onclick="openSolution()">Open in Editor</button>
@@ -302,8 +301,8 @@ export class ProblemPanel {
          <div class="snippet-code">
            <pre><code id="snippetCode"></code></pre>
          </div>`
-      : '<p class="muted">No code snippets available.</p>'
-  }
+        : '<p class="muted">No code snippets available.</p>'
+      }
 
   <hr class="divider" />
 

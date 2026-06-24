@@ -156,6 +156,55 @@
           "type": "string",
           "default": "",
           "description": "Root directory for all LeetVSCode storage (solutions, cache, etc.). Leave empty to use the default (~/.leetvscode)."
+        },
+        "leetvscode.defaultLanguage": {
+          "type": "string",
+          "default": "",
+          "enum": [
+            "",
+            "cpp",
+            "java",
+            "python3",
+            "python",
+            "c",
+            "csharp",
+            "javascript",
+            "typescript",
+            "php",
+            "swift",
+            "kotlin",
+            "dart",
+            "golang",
+            "ruby",
+            "scala",
+            "rust",
+            "racket",
+            "erlang",
+            "elixir"
+          ],
+          "enumDescriptions": [
+            "No default",
+            "C++",
+            "Java",
+            "Python 3",
+            "Python",
+            "C",
+            "C#",
+            "JavaScript",
+            "TypeScript",
+            "PHP",
+            "Swift",
+            "Kotlin",
+            "Dart",
+            "Go",
+            "Ruby",
+            "Scala",
+            "Rust",
+            "Racket",
+            "Erlang",
+            "Elixir"
+          ],
+          "description": "Default language for code snippets. The snippet panel will open in this language if available."
         }
       }
     }
