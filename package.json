@@ -156,6 +156,11 @@
           "type": "string",
           "default": "",
           "description": "Absolute path where solution files are saved. Leave empty to use the default (~/.leetvscode/output/solutions)."
+        },
+        "leetvscode.cachePath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path for the problems cache directory. Leave empty to use the default (~/.leetcode/.cache/problems)."
         }
       }
     }

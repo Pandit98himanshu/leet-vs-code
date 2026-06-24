@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import type { ProblemList } from "leetcode-query";
 import { SessionManager } from "../session/SessionManager";
+import { ProblemsCache } from "../cache/ProblemsCache";
 
 type DifficultyFilter = "All" | "Easy" | "Medium" | "Hard";
 type ProblemSummary = ProblemList["questions"][number];
@@ -30,12 +31,15 @@ export class ProblemsProvider
     ProblemItem | undefined | null | void
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+  private readonly diskCache = new ProblemsCache();
   private readonly problemCache = new Map<DifficultyFilter, ProblemSummary[]>();
   private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
 
   constructor(private readonly sessionManager: SessionManager) { }
 
   refresh(): void {
+    this.diskCache.clear();
+    this.problemCache.clear();
     this._onDidChangeTreeData.fire();
   }
 
@@ -107,11 +111,20 @@ export class ProblemsProvider
   private async getProblems(
     difficulty: DifficultyFilter
   ): Promise<ProblemSummary[]> {
+    // 1. In-memory cache
     const cached = this.problemCache.get(difficulty);
     if (cached) {
       return cached;
     }
 
+    // 2. Disk cache (~/.leetcode/.cache/problems)
+    const diskCached = this.diskCache.get(difficulty);
+    if (diskCached) {
+      this.problemCache.set(difficulty, diskCached);
+      return diskCached;
+    }
+
+    // 3. Deduplicate in-flight requests
     const inFlight = this.loadingProblems.get(difficulty);
     if (inFlight) {
       return inFlight;
@@ -122,6 +135,7 @@ export class ProblemsProvider
 
     try {
       const questions = await loadPromise;
+      this.diskCache.set(difficulty, questions);
       this.problemCache.set(difficulty, questions);
       return questions;
     } finally {
