@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import * as path from "path";
-import { getSolutionsDir } from "./paths";
+import { getSolutionsDir, getProblemSearchCachePath } from "./paths";
 import { LeetCode, ProblemList } from "leetcode-query";
 import { ProblemPanel } from "./panels/ProblemPanel";
 import { UserProfilePanel } from "./panels/UserProfilePanel";
@@ -383,10 +383,16 @@ export function deactivate() { }
 
 type ProblemSummary = ProblemList["questions"][number];
 
-let cachedProblems: ProblemSummary[] | undefined;
 async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
-  if (cachedProblems) {
-    return cachedProblems;
+  const cachePath = vscode.Uri.file(getProblemSearchCachePath());
+  try {
+    const data = await vscode.workspace.fs.readFile(cachePath);
+    const parsed = JSON.parse(Buffer.from(data).toString("utf8"));
+    if (parsed && parsed.length > 0) {
+      return parsed;
+    }
+  } catch (err) {
+    vscode.window.showInformationMessage(`Cache file doesn't exist at path ${cachePath}\nLoading from LeetCode...`);
   }
 
   const all: ProblemSummary[] = [];
@@ -406,7 +412,16 @@ async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
     }
   }
 
-  cachedProblems = all;
+  try {
+    await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(getProblemSearchCachePath())));
+    await vscode.workspace.fs.writeFile(
+      cachePath,
+      Buffer.from(JSON.stringify(all), "utf8")
+    );
+  } catch (err) {
+    vscode.window.showErrorMessage(`Failed to write search index cache: ${formatError(err)}`);
+  }
+
   return all;
 }
 

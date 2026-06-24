@@ -23,3 +23,8 @@ export function getSolutionsDir(): string {
 export function getProblemsCacheDir(): string {
   return path.join(getRootDir(), ".cache", "problems");
 }
+
+/** root_dir/.cache/search_index.json */
+export function getProblemSearchCachePath(): string {
+  return path.join(getRootDir(), ".cache", "search_index.json");
+}
