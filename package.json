@@ -151,6 +151,11 @@
             "Hard"
           ],
           "description": "Default difficulty filter for prolem browsing"
+        },
+        "leetvscode.solutionsPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path where solution files are saved. Leave empty to use the default (~/.leetvscode/output/solutions)."
         }
       }
     }
