@@ -117,7 +117,7 @@ export class ProblemsProvider
       return cached;
     }
 
-    // 2. Disk cache (~/.leetcode/.cache/problems)
+    // 2. Disk cache (~/.leetvscode/.cache/problems)
     const diskCached = this.diskCache.get(difficulty);
     if (diskCached) {
       this.problemCache.set(difficulty, diskCached);

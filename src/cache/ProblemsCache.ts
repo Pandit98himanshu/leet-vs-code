@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as os from "os";
-import * as vscode from "vscode";
 import type { ProblemList } from "leetcode-query";
+import { getProblemsCacheDir } from "../paths";
 
 type ProblemSummary = ProblemList["questions"][number];
 
@@ -11,20 +10,11 @@ interface CacheEntry {
   problems: ProblemSummary[];
 }
 
-const DEFAULT_CACHE_DIR = path.join(os.homedir(), ".leetcode", ".cache", "problems");
 const DEFAULT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-function getConfiguredCacheDir(): string {
-  const configured = vscode.workspace
-    .getConfiguration("leetvscode")
-    .get<string>("cachePath", "");
-  return configured || DEFAULT_CACHE_DIR;
-}
 
 /**
  * Disk-based cache for LeetCode problems.
- * Stores cached problem lists as JSON files under the configured cache directory.
- * Defaults to ~/.leetcode/.cache/problems/ if no custom path is set.
+ * Stores cached problem lists as JSON files under rootDir/.cache/problems/.
  */
 export class ProblemsCache {
   private readonly ttlMs: number;
@@ -34,7 +24,7 @@ export class ProblemsCache {
   }
 
   private get cacheDir(): string {
-    return getConfiguredCacheDir();
+    return getProblemsCacheDir();
   }
 
   /**
