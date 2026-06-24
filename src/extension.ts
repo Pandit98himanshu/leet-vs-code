@@ -388,11 +388,11 @@ async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
   try {
     const data = await vscode.workspace.fs.readFile(cachePath);
     const parsed = JSON.parse(Buffer.from(data).toString("utf8"));
-    if (parsed && parsed.length > 0) {
-      return parsed;
+    if (parsed && parsed.problems && parsed.problems.length > 0) {
+      return parsed.problems;
     }
   } catch (err) {
-    vscode.window.showInformationMessage(`Cache file doesn't exist at path ${cachePath}\nLoading from LeetCode...`);
+    vscode.window.showInformationMessage(`Cache file doesn't exist at path ${cachePath}.`);
   }
 
   const all: ProblemSummary[] = [];
@@ -416,7 +416,7 @@ async function fetchAllProblems(lc: LeetCode): Promise<ProblemSummary[]> {
     await vscode.workspace.fs.createDirectory(vscode.Uri.file(path.dirname(getProblemSearchCachePath())));
     await vscode.workspace.fs.writeFile(
       cachePath,
-      Buffer.from(JSON.stringify(all), "utf8")
+      Buffer.from(JSON.stringify({ timestamp: Date.now(), problems: all }), "utf8")
     );
   } catch (err) {
     vscode.window.showErrorMessage(`Failed to write search index cache: ${formatError(err)}`);
