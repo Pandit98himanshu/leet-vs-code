@@ -3,6 +3,7 @@ out/
 .output/
 .output/*
 node_modules/
+scratch/*
 *.vsix
 tsconfig.json
 package-lock.json
