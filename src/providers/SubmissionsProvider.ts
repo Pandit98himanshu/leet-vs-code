@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import type { Submission } from "leetcode-query";
+import type { RecentSubmission } from "leetcode-query";
 import { SessionManager } from "../session/SessionManager";
 
 export class SubmissionItem extends vscode.TreeItem {
@@ -63,9 +63,24 @@ export class SubmissionsProvider
   }
 
   private async getSubmissionItems(): Promise<SubmissionItem[]> {
-    let submissions: Submission[];
+    let submissions: RecentSubmission[];
     try {
-      submissions = await (await this.sessionManager.getLeetCodeClient()).submissions();
+      const lc = await this.sessionManager.getLeetCodeClient();
+      const whoami = await lc.whoami();
+      if (!whoami?.username) {
+        return [
+          new SubmissionItem(
+            "Session expired — please set a new session",
+            {
+              command: "leetvscode.setSession",
+              title: "Set Session",
+            },
+            vscode.TreeItemCollapsibleState.None,
+            "warning"
+          ),
+        ];
+      }
+      submissions = await lc.recent_submissions(whoami.username);
     } catch (err) {
       vscode.window.showErrorMessage(
         `Failed to load submissions: ${String(err)}`
@@ -95,7 +110,8 @@ export class SubmissionsProvider
       const icon = s.statusDisplay === "Accepted" ? "check" : "circle-large-outline";
       const label = `${s.title}`;
       const description = `${s.statusDisplay} · ${s.lang}`;
-      const detail = `Runtime: ${s.runtime}ms · Memory: ${s.memory}MB · ${new Date(s.timestamp).toLocaleString()}`;
+      const submittedAt = new Date(parseInt(s.timestamp, 10) * 1000).toLocaleString();
+      const detail = `Status: ${s.statusDisplay} · ${submittedAt}`;
 
       const item = new SubmissionItem(
         label,
