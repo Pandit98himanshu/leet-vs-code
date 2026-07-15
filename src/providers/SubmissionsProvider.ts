@@ -26,7 +26,10 @@ export class SubmissionsProvider
   >();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
-  constructor(private readonly sessionManager: SessionManager) { }
+  constructor(private readonly sessionManager: SessionManager) {
+    // Auto-refresh when the user signs in or out
+    this.sessionManager.onDidChangeSession(() => this.refresh());
+  }
 
   refresh(): void {
     this._onDidChangeTreeData.fire();
