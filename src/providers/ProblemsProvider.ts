@@ -35,11 +35,15 @@ export class ProblemsProvider
   private readonly problemCache = new Map<DifficultyFilter, ProblemSummary[]>();
   private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
 
-  constructor(private readonly sessionManager: SessionManager) { }
+  constructor(private readonly sessionManager: SessionManager) {
+    // Auto-refresh when the user signs in or out
+    this.sessionManager.onDidChangeSession(() => this.refresh());
+  }
 
   refresh(): void {
     this.diskCache.clear();
     this.problemCache.clear();
+    this.loadingProblems.clear();
     this._onDidChangeTreeData.fire();
   }
 

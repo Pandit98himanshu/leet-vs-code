@@ -333,8 +333,6 @@ export function activate(context: vscode.ExtensionContext) {
         }
         await sessionManager.setSession(session.trim());
         updateSessionContext();
-        problemsProvider.refresh();
-        submissionsProvider.refresh();
         vscode.window.showInformationMessage(
           "LeetCode session saved. You can now access authenticated features."
         );
@@ -348,8 +346,6 @@ export function activate(context: vscode.ExtensionContext) {
       async () => {
         await sessionManager.clearSession();
         updateSessionContext();
-        problemsProvider.refresh();
-        submissionsProvider.refresh();
         vscode.window.showInformationMessage("LeetCode session cleared.");
       }
     )

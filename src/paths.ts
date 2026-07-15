@@ -24,7 +24,7 @@ export function getProblemsCacheDir(): string {
   return path.join(getRootDir(), ".cache", "problems");
 }
 
-/** root_dir/.cache/problems/all.json */
+/** root_dir/.cache/problems/search_index.json */
 export function getProblemSearchCachePath(): string {
-  return path.join(getProblemsCacheDir(), "all.json");
+  return path.join(getProblemsCacheDir(), "search_index.json");
 }
