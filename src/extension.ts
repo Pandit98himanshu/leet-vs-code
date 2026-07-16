@@ -315,7 +315,7 @@ export function activate(context: vscode.ExtensionContext) {
                 csrf,
               });
 
-              showSubmissionResult(result, metadata);
+              showSubmissionResult(result, metadata, testResultsProvider);
             } catch (err) {
               vscode.window.showErrorMessage(
                 `Failed to submit solution: ${formatError(err)}`
@@ -386,6 +386,14 @@ export function activate(context: vscode.ExtensionContext) {
           }
         } else if (testcasesUri) {
           vscode.window.showInformationMessage(`Using test cases from ${path.basename(testcasesUri.fsPath)}`);
+        }
+
+        if (testcasesUri) {
+          try {
+            await vscode.window.showTextDocument(testcasesUri, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true });
+          } catch (e) {
+            console.error("Failed to open test cases file", e);
+          }
         }
 
         if (!dataInput) {
@@ -712,33 +720,11 @@ async function resolveSolutionMetadata(
 
 function showSubmissionResult(
   result: SubmitResult,
-  metadata: SolutionMetadata
+  metadata: SolutionMetadata,
+  testResultsProvider: TestResultsProvider
 ): void {
-  const baseMessage = `${metadata.questionFrontendId}. ${metadata.title}: ${result.statusMsg ?? result.state ?? "Submitted"}`;
-
-  if (result.statusMsg === "Accepted") {
-    vscode.window.showInformationMessage(
-      `${baseMessage}\n${result.runtime ?? "Runtime N/A"}\n${result.memory ?? "Memory N/A"}`
-    );
-    return;
-  }
-
-  const details = [
-    result.totalCorrect !== undefined && result.totalTestcases !== undefined
-      ? `${result.totalCorrect}/${result.totalTestcases} testcases passed`
-      : undefined,
-    result.compileError ? `\nCompile Error: ${result.compileError}` : undefined,
-    result.runtimeError ? `\nRuntime Error: ${result.runtimeError}` : undefined,
-    result.lastTestcase ? `\nTestcase Failed: ${result.lastTestcase}` : undefined,
-    result.expectedOutput ? `\nExpected Output: ${result.expectedOutput}` : undefined,
-    result.codeOutput ? `\nYour Output: ${result.codeOutput}` : undefined,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  vscode.window.showWarningMessage(
-    details ? `${baseMessage}\n${details}` : baseMessage
-  );
+  testResultsProvider.updateSubmitResult(result, metadata);
+  vscode.commands.executeCommand("leetvscodeTestResultsView.focus");
 }
 
 function inferSlugFromFileName(fileName: string): string {
