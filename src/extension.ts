@@ -6,8 +6,10 @@ import { ProblemPanel } from "./panels/ProblemPanel";
 import { UserProfilePanel } from "./panels/UserProfilePanel";
 import { ProblemsProvider } from "./providers/ProblemsProvider";
 import { SubmissionsProvider } from "./providers/SubmissionsProvider";
+import { TestResultsProvider } from "./providers/TestResultsProvider";
 import { SessionManager } from "./session/SessionManager";
 import { SubmitResult, SubmitService } from "./submission/SubmitService";
+import { TestService, TestResult } from "./submission/TestService";
 
 interface SolutionMetadata {
   questionId: string;
@@ -25,11 +27,42 @@ interface ProblemForEditor {
   codeSnippets?: { lang: string; langSlug: string; code: string }[];
 }
 
+class LeetCodeLensProvider implements vscode.CodeLensProvider {
+  constructor(private solutionMetadata: Map<string, SolutionMetadata>) { }
+
+  provideCodeLenses(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken
+  ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
+    const baseName = path.basename(document.fileName);
+    const hasMetadata = this.solutionMetadata.has(document.uri.toString());
+    const matchesPattern = /^\\d+-/.test(baseName);
+
+    if (!hasMetadata && !matchesPattern) {
+      return [];
+    }
+
+    const range = new vscode.Range(0, 0, 0, 0);
+    return [
+      new vscode.CodeLens(range, {
+        title: "$(play) Test Solution",
+        command: "leetvscode.testSolution",
+      }),
+      new vscode.CodeLens(range, {
+        title: "$(cloud-upload) Submit Solution",
+        command: "leetvscode.submitSolution",
+      })
+    ];
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   const sessionManager = new SessionManager(context);
   const problemsProvider = new ProblemsProvider(sessionManager);
   const submissionsProvider = new SubmissionsProvider(sessionManager);
+  const testResultsProvider = new TestResultsProvider(context.extensionUri);
   const submitService = new SubmitService();
+  const testService = new TestService();
   const solutionMetadata = new Map<string, SolutionMetadata>();
 
   async function updateSessionContext(): Promise<void> {
@@ -50,6 +83,22 @@ export function activate(context: vscode.ExtensionContext) {
       submissionsProvider
     )
   );
+
+  context.subscriptions.push(
+    vscode.window.registerWebviewViewProvider(
+      TestResultsProvider.viewType,
+      testResultsProvider
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { scheme: "file" },
+      new LeetCodeLensProvider(solutionMetadata)
+    )
+  );
+
+
 
   updateSessionContext();
 
@@ -304,10 +353,122 @@ export function activate(context: vscode.ExtensionContext) {
                 csrf,
               });
 
-              showSubmissionResult(result, metadata);
+              showSubmissionResult(result, metadata, testResultsProvider);
             } catch (err) {
               vscode.window.showErrorMessage(
                 `Failed to submit solution: ${formatError(err)}`
+              );
+            }
+          }
+        );
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "leetvscode.testSolution",
+      async () => {
+        if (!(await sessionManager.hasSession())) {
+          const action = await vscode.window.showWarningMessage(
+            "You need to set your LeetCode session before testing.",
+            "Set Session"
+          );
+          if (action === "Set Session") {
+            await vscode.commands.executeCommand("leetvscode.setSession");
+          }
+          return;
+        }
+
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+          vscode.window.showErrorMessage(
+            "Open a solution file before testing."
+          );
+          return;
+        }
+
+        const lc = await sessionManager.getLeetCodeClient();
+        const metadata = await resolveSolutionMetadata(
+          editor.document,
+          solutionMetadata,
+          lc
+        );
+        if (!metadata) {
+          return;
+        }
+
+        let dataInput = "";
+        const solutionUri = editor.document.uri;
+        let testcasesUri: vscode.Uri | undefined;
+
+        if (solutionUri.scheme === "file") {
+          testcasesUri = solutionUri.with({ path: solutionUri.path.replace(/\.[^.]+$/, '.testcases.txt') });
+          try {
+            const data = await vscode.workspace.fs.readFile(testcasesUri);
+            dataInput = Buffer.from(data).toString("utf8");
+          } catch {
+            // File doesn't exist, dataInput remains empty
+          }
+        }
+
+        if (!dataInput.trim()) {
+          try {
+            const problem = await lc.problem(metadata.titleSlug);
+            dataInput = problem?.exampleTestcases || "";
+            if (dataInput && testcasesUri) {
+              await vscode.workspace.fs.writeFile(testcasesUri, Buffer.from(dataInput, "utf8"));
+            }
+          } catch (err) {
+            vscode.window.showWarningMessage("Could not fetch default testcases: " + formatError(err));
+          }
+        } else if (testcasesUri) {
+          vscode.window.showInformationMessage(`Using test cases from ${path.basename(testcasesUri.fsPath)}`);
+        }
+
+        if (testcasesUri) {
+          try {
+            await vscode.window.showTextDocument(testcasesUri, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true });
+          } catch (e) {
+            console.error("Failed to open test cases file", e);
+          }
+        }
+
+        if (!dataInput) {
+          vscode.window.showErrorMessage("No testcases found for this problem.");
+          return;
+        }
+
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: `Testing "${metadata.title}"...`,
+            cancellable: false,
+          },
+          async () => {
+            try {
+              const credential = await sessionManager.getCredential();
+              const session = credential.session;
+              const csrf = credential.csrf;
+              if (!session || !csrf) {
+                throw new Error("Missing LeetCode session or CSRF token.");
+              }
+
+              const result = await testService.test({
+                titleSlug: metadata.titleSlug,
+                questionId: metadata.questionId,
+                langSlug: metadata.langSlug,
+                code: editor.document.getText(),
+                dataInput,
+                session,
+                csrf,
+              });
+
+              testResultsProvider.updateResult(result, { ...metadata, dataInput });
+              await vscode.commands.executeCommand("leetvscodeTestResultsView.focus");
+            } catch (err) {
+              vscode.window.showErrorMessage(
+                `Failed to test solution: ${formatError(err)}`
               );
             }
           }
@@ -370,6 +531,15 @@ export function activate(context: vscode.ExtensionContext) {
 
         submissionsProvider.refresh();
         await vscode.commands.executeCommand("leetvscodeSubmissions.focus");
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "leetvscode.clearTestResults",
+      () => {
+        testResultsProvider.clear();
       }
     )
   );
@@ -588,33 +758,11 @@ async function resolveSolutionMetadata(
 
 function showSubmissionResult(
   result: SubmitResult,
-  metadata: SolutionMetadata
+  metadata: SolutionMetadata,
+  testResultsProvider: TestResultsProvider
 ): void {
-  const baseMessage = `${metadata.questionFrontendId}. ${metadata.title}: ${result.statusMsg ?? result.state ?? "Submitted"}`;
-
-  if (result.statusMsg === "Accepted") {
-    vscode.window.showInformationMessage(
-      `${baseMessage}\n${result.runtime ?? "Runtime N/A"}\n${result.memory ?? "Memory N/A"}`
-    );
-    return;
-  }
-
-  const details = [
-    result.totalCorrect !== undefined && result.totalTestcases !== undefined
-      ? `${result.totalCorrect}/${result.totalTestcases} testcases passed`
-      : undefined,
-    result.compileError ? `\nCompile Error: ${result.compileError}` : undefined,
-    result.runtimeError ? `\nRuntime Error: ${result.runtimeError}` : undefined,
-    result.lastTestcase ? `\nTestcase Failed: ${result.lastTestcase}` : undefined,
-    result.expectedOutput ? `\nExpected Output: ${result.expectedOutput}` : undefined,
-    result.codeOutput ? `\nYour Output: ${result.codeOutput}` : undefined,
-  ]
-    .filter(Boolean)
-    .join("\n");
-
-  vscode.window.showWarningMessage(
-    details ? `${baseMessage}\n${details}` : baseMessage
-  );
+  testResultsProvider.updateSubmitResult(result, metadata);
+  vscode.commands.executeCommand("leetvscodeTestResultsView.focus");
 }
 
 function inferSlugFromFileName(fileName: string): string {

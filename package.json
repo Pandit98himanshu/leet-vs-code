@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.4.2",
+  "version": "1.5.0",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -36,6 +36,13 @@
           "title": "LeetCode",
           "icon": "media/leetcode.svg"
         }
+      ],
+      "panel": [
+        {
+          "id": "leetvscodePanel",
+          "title": "LeetCode Test Results",
+          "icon": "$(beaker)"
+        }
       ]
     },
     "views": {
@@ -50,6 +57,13 @@
           "name": "My Submissions",
           "icon": "$(history)",
           "visibility": "collapsed"
+        }
+      ],
+      "leetvscodePanel": [
+        {
+          "id": "leetvscodeTestResultsView",
+          "name": "Test Results",
+          "type": "webview"
         }
       ]
     },
@@ -84,6 +98,11 @@
         "icon": "$(cloud-upload)"
       },
       {
+        "command": "leetvscode.testSolution",
+        "title": "Test Solution",
+        "icon": "$(play)"
+      },
+      {
         "command": "leetvscode.setSession",
         "title": "Set Session Cookie",
         "icon": "$(key)"
@@ -97,15 +116,15 @@
         "command": "leetvscode.showMySubmissions",
         "title": "Show my recent Submissions",
         "icon": "$(history)"
+      },
+      {
+        "command": "leetvscode.clearTestResults",
+        "title": "Clear Test Results",
+        "icon": "$(clear-all)"
       }
     ],
     "menus": {
       "view/title": [
-        {
-          "command": "leetvscode.submitSolution",
-          "when": "view == leetvscodeProblems && leetvscode:hasSession",
-          "group": "navigation@0"
-        },
         {
           "command": "leetvscode.showDailyChallenge",
           "when": "view == leetvscodeProblems",
@@ -134,6 +153,11 @@
         {
           "command": "leetvscode.showMySubmissions",
           "when": "view == leetvscodeSubmissions && leetvscode:hasSession",
+          "group": "navigation@0"
+        },
+        {
+          "command": "leetvscode.clearTestResults",
+          "when": "view == leetvscodeTestResultsView",
           "group": "navigation@0"
         }
       ]
