@@ -16,6 +16,7 @@ interface Problem {
   stats?: string;
   exampleTestcases?: string;
   similarQuestions?: string;
+  status?: any;
 }
 
 export class ProblemPanel {
@@ -95,6 +96,13 @@ export class ProblemPanel {
           ? "#ffc01e"
           : "#ff375f";
 
+    const statusColor =
+      problem.status === "ac"
+        ? "#00b8a3"
+        : problem.status === "notac"
+          ? "#ffc01e"
+          : "#ff375f";
+
     // Parse stats JSON safely
     let acRate = "N/A";
 
@@ -164,6 +172,13 @@ export class ProblemPanel {
     const dailyBadge = dailyDate
       ? `<span>Daily Question · ${dailyDate}</span>`
       : "";
+
+    let statusText = "";
+    if (problem.status === "ac") {
+      statusText = "Solved";
+    } else if (problem.status === "notac") {
+      statusText = "Attempted";
+    }
 
     return /* html */ `<!DOCTYPE html>
 <html lang="en">
@@ -258,9 +273,12 @@ export class ProblemPanel {
   </style>
 </head>
 <body>
-  <h1>
-    ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
-    <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
+  <h1 style="display: flex; align-items: center; justify-content: space-between;">
+    <span>
+      ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
+      <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
+    </span>
+    ${statusText ? `<span class="badge" style="font-size: 0.55em; color:${statusColor}">${statusText}</span>` : ""}
   </h1>
 
   <div class="meta">
@@ -270,10 +288,6 @@ export class ProblemPanel {
     <span class="badge stat-badge">👎 ${problem.dislikes.toLocaleString()}</span>
     <span class="badge stat-badge">✅ AC Rate: ${acRate}</span>
     ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}
-  </div>
-
-  <div class="tags">
-    ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
   </div>
 
   <hr class="divider" />
@@ -305,6 +319,11 @@ export class ProblemPanel {
       }
 
   <hr class="divider" />
+
+  <h2>Topics</h2>
+  <div class="tags">
+    ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
+  </div>
 
   <h2>Similar Questions</h2>
   <div>${similarHtml}</div>
