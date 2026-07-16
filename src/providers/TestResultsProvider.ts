@@ -49,7 +49,9 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
     content += `<p><strong>Status:</strong> ${result.statusMsg ?? result.state ?? "Tested"}</p>`;
 
     if (result.totalCorrect !== undefined && result.totalTestcases !== undefined) {
-      content += `<p>${result.totalCorrect}/${result.totalTestcases} testcases passed.</p>`;
+      const allPassed = result.correctAnswer
+        ? ' style="color: green;"' : ' style="color: red;"';
+      content += `<p${allPassed}>${result.totalCorrect}/${result.totalTestcases} testcases passed.</p>`;
     }
 
     if (result.runtime && result.memory) {
@@ -96,7 +98,7 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
   private renderSubmitResultHtml(result: SubmitResult, metadata: { title: string; questionFrontendId: string }): string {
     let content = `<h2>${metadata.questionFrontendId}. ${metadata.title}</h2>`;
     content += `<h3>Submission Result</h3>`;
-    
+
     const isAccepted = result.statusMsg === "Accepted";
     const statusColorStyle = isAccepted ? ' style="color: green;"' : ' style="color: red;"';
     content += `<p><strong>Status:</strong> <span${statusColorStyle}>${result.statusMsg ?? result.state ?? "Submitted"}</span></p>`;

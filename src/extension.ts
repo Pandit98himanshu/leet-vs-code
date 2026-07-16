@@ -27,6 +27,35 @@ interface ProblemForEditor {
   codeSnippets?: { lang: string; langSlug: string; code: string }[];
 }
 
+class LeetCodeLensProvider implements vscode.CodeLensProvider {
+  constructor(private solutionMetadata: Map<string, SolutionMetadata>) { }
+
+  provideCodeLenses(
+    document: vscode.TextDocument,
+    token: vscode.CancellationToken
+  ): vscode.CodeLens[] | Thenable<vscode.CodeLens[]> {
+    const baseName = path.basename(document.fileName);
+    const hasMetadata = this.solutionMetadata.has(document.uri.toString());
+    const matchesPattern = /^\\d+-/.test(baseName);
+
+    if (!hasMetadata && !matchesPattern) {
+      return [];
+    }
+
+    const range = new vscode.Range(0, 0, 0, 0);
+    return [
+      new vscode.CodeLens(range, {
+        title: "$(play) Test Solution",
+        command: "leetvscode.testSolution",
+      }),
+      new vscode.CodeLens(range, {
+        title: "$(cloud-upload) Submit Solution",
+        command: "leetvscode.submitSolution",
+      })
+    ];
+  }
+}
+
 export function activate(context: vscode.ExtensionContext) {
   const sessionManager = new SessionManager(context);
   const problemsProvider = new ProblemsProvider(sessionManager);
@@ -61,6 +90,15 @@ export function activate(context: vscode.ExtensionContext) {
       testResultsProvider
     )
   );
+
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      { scheme: "file" },
+      new LeetCodeLensProvider(solutionMetadata)
+    )
+  );
+
+
 
   updateSessionContext();
 
@@ -382,7 +420,7 @@ export function activate(context: vscode.ExtensionContext) {
               await vscode.workspace.fs.writeFile(testcasesUri, Buffer.from(dataInput, "utf8"));
             }
           } catch (err) {
-             vscode.window.showWarningMessage("Could not fetch default testcases: " + formatError(err));
+            vscode.window.showWarningMessage("Could not fetch default testcases: " + formatError(err));
           }
         } else if (testcasesUri) {
           vscode.window.showInformationMessage(`Using test cases from ${path.basename(testcasesUri.fsPath)}`);
@@ -397,8 +435,8 @@ export function activate(context: vscode.ExtensionContext) {
         }
 
         if (!dataInput) {
-            vscode.window.showErrorMessage("No testcases found for this problem.");
-            return;
+          vscode.window.showErrorMessage("No testcases found for this problem.");
+          return;
         }
 
         await vscode.window.withProgress(
