@@ -1,14 +1,17 @@
-interface SubmitParams {
+import { readJson, delay } from "./SubmitService";
+
+interface TestParams {
   titleSlug: string;
   questionId: string;
   langSlug: string;
   code: string;
+  dataInput: string;
   session: string;
   csrf: string;
 }
 
-export interface SubmitResult {
-  submissionId: number;
+export interface TestResult {
+  interpretId: string;
   state?: string;
   statusMsg?: string;
   runtime?: string;
@@ -17,9 +20,9 @@ export interface SubmitResult {
   totalTestcases?: number;
   compileError?: string;
   runtimeError?: string;
-  lastTestcase?: string;
-  expectedOutput?: string;
-  codeOutput?: string;
+  codeAnswer?: string[];
+  expectedCodeAnswer?: string[];
+  correctAnswer?: boolean;
 }
 
 const BASE_URL = "https://leetcode.com";
@@ -27,10 +30,10 @@ const USER_AGENT = "Mozilla/5.0 Leet-VS-Code";
 const MAX_POLL_ATTEMPTS = 30;
 const POLL_DELAY_MS = 1000;
 
-export class SubmitService {
-  async submit(params: SubmitParams): Promise<SubmitResult> {
-    const submitResponse = await fetch(
-      `${BASE_URL}/problems/${params.titleSlug}/submit/`,
+export class TestService {
+  async test(params: TestParams): Promise<TestResult> {
+    const response = await fetch(
+      `${BASE_URL}/problems/${params.titleSlug}/interpret_solution/`,
       {
         method: "POST",
         headers: this.getHeaders(
@@ -41,41 +44,40 @@ export class SubmitService {
           lang: params.langSlug,
           question_id: params.questionId,
           typed_code: params.code,
+          data_input: params.dataInput,
         }),
       }
     );
 
-    const submitBody = await readJson<{ submission_id?: number; error?: string }>(
-      submitResponse
-    );
-    if (!submitResponse.ok || !submitBody.submission_id) {
+    const body = await readJson<{ interpret_id?: string; interpret_expected_id?: string; error?: string }>(response);
+    const interpretId = body.interpret_id || body.interpret_expected_id;
+    if (!response.ok || !interpretId) {
       throw new Error(
-        submitBody.error ||
-          `LeetCode submit failed with HTTP ${submitResponse.status}`
+        body.error || `LeetCode interpret failed with HTTP ${response.status}`
       );
     }
 
-    return this.pollResult(params, submitBody.submission_id);
+    return this.pollResult(params, interpretId);
   }
 
   private async pollResult(
-    params: SubmitParams,
-    submissionId: number
-  ): Promise<SubmitResult> {
+    params: TestParams,
+    interpretId: string
+  ): Promise<TestResult> {
     for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt++) {
       await delay(POLL_DELAY_MS);
 
       const response = await fetch(
-        `${BASE_URL}/submissions/detail/${submissionId}/check/`,
+        `${BASE_URL}/submissions/detail/${interpretId}/check/`,
         {
           method: "GET",
           headers: this.getHeaders(
             params,
-            `${BASE_URL}/submissions/detail/${submissionId}/`
+            `${BASE_URL}/submissions/detail/${interpretId}/`
           ),
         }
       );
-      const body = await readJson<LeetCodeCheckResponse>(response);
+      const body = await readJson<any>(response);
       if (!response.ok) {
         throw new Error(
           `LeetCode status check failed with HTTP ${response.status}`
@@ -84,7 +86,7 @@ export class SubmitService {
 
       if (body.state !== "PENDING" && body.state !== "STARTED") {
         return {
-          submissionId,
+          interpretId,
           state: body.state,
           statusMsg: body.status_msg,
           runtime: body.status_runtime,
@@ -93,18 +95,18 @@ export class SubmitService {
           totalTestcases: body.total_testcases,
           compileError: body.compile_error || body.full_compile_error,
           runtimeError: body.runtime_error,
-          lastTestcase: body.last_testcase,
-          expectedOutput: body.expected_output,
-          codeOutput: body.code_output,
+          codeAnswer: body.code_answer,
+          expectedCodeAnswer: body.expected_code_answer,
+          correctAnswer: body.correct_answer,
         };
       }
     }
 
-    return { submissionId, state: "PENDING", statusMsg: "Pending" };
+    return { interpretId, state: "PENDING", statusMsg: "Pending" };
   }
 
   private getHeaders(
-    params: SubmitParams,
+    params: TestParams,
     referer: string
   ): Record<string, string> {
     return {
@@ -116,38 +118,4 @@ export class SubmitService {
       "user-agent": USER_AGENT,
     };
   }
-}
-
-interface LeetCodeCheckResponse {
-  state?: string;
-  status_msg?: string;
-  status_runtime?: string;
-  status_memory?: string;
-  total_correct?: number;
-  total_testcases?: number;
-  compile_error?: string;
-  full_compile_error?: string;
-  runtime_error?: string;
-  last_testcase?: string;
-  expected_output?: string;
-  code_output?: string;
-}
-
-export async function readJson<T>(response: Response): Promise<T> {
-  const text = await response.text();
-  if (!text) {
-    return {} as T;
-  }
-
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    throw new Error(
-      `LeetCode returned a non-JSON response: ${text.slice(0, 120)}`
-    );
-  }
-}
-
-export function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
