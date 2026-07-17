@@ -332,6 +332,8 @@ export class ProblemPanel {
   <h2>Similar Questions</h2>
   <div>${similarHtml}</div>
 
+  ${problem.note ? `<h2>Note</h2>\n  <div class="problem-content">\n    <p>${escapeHtml(problem.note)}</p>\n  </div>\n` : ""}
+
   <script>
     const vscode = acquireVsCodeApi();
     const snippets = ${snippetsJson};
