@@ -5,6 +5,7 @@ import { SubmitResult } from "../submission/SubmitService";
 export class TestResultsProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "leetvscodeTestResultsView";
   private _view?: vscode.WebviewView;
+  private _lastHtml?: string;
 
   constructor(private readonly _extensionUri: vscode.Uri) { }
 
@@ -20,30 +21,37 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this.getHtmlForWebview("Waiting for test results...");
+    webviewView.webview.html = this._lastHtml ?? this.getHtmlForWebview("Waiting for test results...");
   }
 
   public updateResult(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }) {
+    this._lastHtml = this.getHtmlForWebview(this.renderTestResultHtml(result, metadata));
     if (this._view) {
-      this._view.webview.html = this.getHtmlForWebview(this.renderResultHtml(result, metadata));
+      this._view.webview.html = this._lastHtml;
       this._view.show?.(true);
+    } else {
+      vscode.commands.executeCommand(`${TestResultsProvider.viewType}.focus`);
     }
   }
 
   public updateSubmitResult(result: SubmitResult, metadata: { title: string; questionFrontendId: string }) {
+    this._lastHtml = this.getHtmlForWebview(this.renderSubmitResultHtml(result, metadata));
     if (this._view) {
-      this._view.webview.html = this.getHtmlForWebview(this.renderSubmitResultHtml(result, metadata));
+      this._view.webview.html = this._lastHtml;
       this._view.show?.(true);
+    } else {
+      vscode.commands.executeCommand(`${TestResultsProvider.viewType}.focus`);
     }
   }
 
   public clear() {
+    this._lastHtml = undefined;
     if (this._view) {
       this._view.webview.html = this.getHtmlForWebview("Waiting for test results...");
     }
   }
 
-  private renderResultHtml(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }): string {
+  private renderTestResultHtml(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }): string {
     let content = `<h2>${metadata.questionFrontendId}. ${metadata.title}</h2>`;
     // content += JSON.stringify(result);
     content += `<p><strong>Status:</strong> ${result.statusMsg ?? result.state ?? "Tested"}</p>`;
