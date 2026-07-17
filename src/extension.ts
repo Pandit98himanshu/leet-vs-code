@@ -684,7 +684,7 @@ async function openSolutionDocument(
       language,
       content: snippet.code,
     });
-    await vscode.window.showTextDocument(document);
+    await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside);
     return document;
   }
 
@@ -703,7 +703,7 @@ async function openSolutionDocument(
   }
 
   const document = await vscode.workspace.openTextDocument(uri);
-  await vscode.window.showTextDocument(document);
+  await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside);
   return document;
 }
 
