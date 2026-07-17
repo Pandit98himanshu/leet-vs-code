@@ -403,7 +403,7 @@ export function activate(context: vscode.ExtensionContext) {
         let testcasesUri: vscode.Uri | undefined;
 
         if (solutionUri.scheme === "file") {
-          testcasesUri = solutionUri.with({ path: solutionUri.path.replace(/\.[^.]+$/, '.testcases.txt') });
+          testcasesUri = solutionUri.with({ path: solutionUri.path.replace(/\.[^.]+$/, '.tcs') });
           try {
             const data = await vscode.workspace.fs.readFile(testcasesUri);
             dataInput = Buffer.from(data).toString("utf8");
