@@ -428,7 +428,9 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (testcasesUri) {
           try {
-            await vscode.window.showTextDocument(testcasesUri, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: true });
+            await vscode.window.showTextDocument(testcasesUri, { viewColumn: vscode.ViewColumn.Active, preserveFocus: false });
+            await vscode.commands.executeCommand('workbench.action.moveEditorToBelowGroup');
+            await vscode.commands.executeCommand('workbench.action.focusAboveGroup');
           } catch (e) {
             console.error("Failed to open test cases file", e);
           }
@@ -676,18 +678,6 @@ async function openSolutionDocument(
   problem: ProblemForEditor,
   snippet: { lang: string; langSlug: string; code: string }
 ): Promise<vscode.TextDocument> {
-  const language = toVsCodeLanguageId(snippet.langSlug);
-  const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
-
-  if (!workspaceFolder) {
-    const document = await vscode.workspace.openTextDocument({
-      language,
-      content: snippet.code,
-    });
-    await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside);
-    return document;
-  }
-
   const folder = vscode.Uri.file(getSolutionsDir());
 
   await vscode.workspace.fs.createDirectory(folder);
@@ -703,7 +693,7 @@ async function openSolutionDocument(
   }
 
   const document = await vscode.workspace.openTextDocument(uri);
-  await vscode.window.showTextDocument(document, vscode.ViewColumn.Beside);
+  await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.Beside, preserveFocus: false, preview: false });
   return document;
 }
 
