@@ -7,16 +7,19 @@ interface Problem {
   titleSlug: string;
   difficulty: string;
   content: string;
-  topicTags: { name: string; slug: string }[];
-  hints: string[];
   likes: number;
   dislikes: number;
+  isLiked?: boolean | null;
   isPaidOnly: boolean;
-  codeSnippets?: { lang: string; langSlug: string; code: string }[];
-  stats?: string;
   exampleTestcases?: string;
   similarQuestions?: string;
+  topicTags: { name: string; slug: string }[];
+  codeSnippets?: { lang: string; langSlug: string; code: string }[];
+  stats?: string;
+  hints: string[];
+  solution?: any;
   status?: any;
+  note: string | null;
 }
 
 export class ProblemPanel {
@@ -286,6 +289,7 @@ export class ProblemPanel {
     <span class="badge difficulty">${escapeHtml(problem.difficulty)}</span>
     <span class="badge stat-badge">👍 ${problem.likes.toLocaleString()}</span>
     <span class="badge stat-badge">👎 ${problem.dislikes.toLocaleString()}</span>
+    ${problem.isLiked ? '<span class="badge stat-badge" title="You liked this problem">❤️</span>' : ""}
     <span class="badge stat-badge">✅ AC Rate: ${acRate}</span>
     ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}
   </div>
