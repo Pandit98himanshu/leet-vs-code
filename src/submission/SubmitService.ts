@@ -51,7 +51,7 @@ export class SubmitService {
     if (!submitResponse.ok || !submitBody.submission_id) {
       throw new Error(
         submitBody.error ||
-          `LeetCode submit failed with HTTP ${submitResponse.status}`
+        `LeetCode submit failed with HTTP ${submitResponse.status}`
       );
     }
 
@@ -142,8 +142,25 @@ export async function readJson<T>(response: Response): Promise<T> {
   try {
     return JSON.parse(text) as T;
   } catch {
+    if (response.status === 429) {
+      throw new Error("Rate limit exceeded. Please wait a few seconds before trying again.");
+    }
+    if (text.trim().toLowerCase().startsWith("<!doctype html") || text.trim().toLowerCase().startsWith("<html")) {
+      let title = "LeetCode Response";
+      const titleMatch = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+      if (titleMatch) {
+        title = titleMatch[1].trim();
+      }
+
+      const vscode = require("vscode");
+      vscode.workspace
+        .openTextDocument({ content: text, language: "html" })
+        .then((doc: any) => vscode.window.showTextDocument(doc));
+
+      throw new Error(`The response has been opened in the editor.`);
+    }
     throw new Error(
-      `LeetCode returned a non-JSON response: ${text.slice(0, 120)}`
+      `LeetCode returned a non-JSON response (Status: ${response.status}): ${text}`
     );
   }
 }
