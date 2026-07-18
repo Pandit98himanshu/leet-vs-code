@@ -107,7 +107,7 @@ export function getProblemHtml(
       )
       .join(" ")
     : '<span class="muted">None</span>';
-  let statusText = "Unsolved";
+  let statusText = "";
   if (problem.status === "ac") {
     statusText = "Solved";
   } else if (problem.status === "notac") {
@@ -149,24 +149,21 @@ export function getProblemHtml(
   <h1 style="display: flex; align-items: center; justify-content: space-between;">
     <span>
       ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
-      ${problem.isLiked
-      ? `<i class="fa-solid fa-heart" style="color: #ff375f; margin-left: 8px;" title="Liked"></i>`
-      : ""
-    }
+      <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
     </span>
     ${dailyDate
-      ? `<span class="badge stat-badge" style="font-size: 0.6em;">📅 ${escapeHtml(
+      ? `<span class="badge stat-badge" style="font-size: 0.6em;"><i class="fa-regular fa-calendar-alt"></i> ${escapeHtml(
         dailyDate
       )}</span>`
       : ""
     }
+    ${statusText ? `<span class="badge" style="font-size: 0.55em; color:${statusColor}">${statusText}</span>` : ""}
   </h1>
   
   <div class="meta">
     <span class="badge difficulty">${escapeHtml(problem.difficulty)}</span>
-    <span class="badge stat-badge"><i class="fa-regular fa-thumbs-up" style="color: rgb(255, 255, 255);"></i> ${problem.likes.toLocaleString()}</span>
+    <span class="badge stat-badge"><i class="${problem.isLiked ? `fa-solid` : `fa-regular`} fa-thumbs-up" style="color: rgb(255, 255, 255);"></i> ${problem.likes.toLocaleString()}</span>
     <span class="badge stat-badge"><i class="fa-regular fa-thumbs-down" style="color: rgb(255, 255, 255);"></i> ${problem.dislikes.toLocaleString()}</span>
-    ${problem.isLiked ? '<span class="badge stat-badge" title="You liked this problem">❤️</span>' : ""}
     <span class="badge stat-badge">Accepted: <strong>${totalAccepted}</strong>/${totalSubmission}</span>
     <span class="badge stat-badge">Acceptance Rate: ${acRate}</span>
     ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}

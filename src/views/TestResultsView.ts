@@ -46,7 +46,6 @@ export function getTestResultHtml(result: TestResult, metadata: { title: string;
 
   if (result.totalTestcases && result.expectedCodeAnswer && result.codeAnswer) {
     for (let i = 0; i < result.totalTestcases; i++) {
-      content += `<hr>`;
       content += `<h3>Testcase ${i + 1}</h3>`;
       content += `<hr>`;
       if (inputTestcases[i]) {
