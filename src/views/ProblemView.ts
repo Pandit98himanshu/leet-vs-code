@@ -1,0 +1,327 @@
+export interface Problem {
+  questionId: string;
+  questionFrontendId: string;
+  title: string;
+  titleSlug: string;
+  difficulty: string;
+  content: string;
+  likes: number;
+  dislikes: number;
+  isLiked?: boolean | null;
+  isPaidOnly: boolean;
+  exampleTestcases?: string;
+  similarQuestions?: string;
+  topicTags: { name: string; slug: string }[];
+  codeSnippets?: { lang: string; langSlug: string; code: string }[];
+  stats?: string;
+  hints: string[];
+  solution?: any;
+  status?: any;
+  note: string | null;
+}
+
+export function getProblemHtml(problem: Problem, dailyDate?: string, defaultLang?: string): string {
+  const difficultyColor =
+    problem.difficulty === "Easy"
+      ? "#00b8a3"
+      : problem.difficulty === "Medium"
+        ? "#ffc01e"
+        : "#ff375f";
+
+  const statusColor =
+    problem.status === "ac"
+      ? "#00b8a3"
+      : problem.status === "notac"
+        ? "#ffc01e"
+        : "#ff375f";
+
+  // Parse stats JSON safely
+  let acRate = "N/A";
+  let totalAccepted = "N/A";
+  let totalSubmission = "N/A";
+
+  if (problem.stats) {
+    const stats = JSON.parse(problem.stats);
+    acRate = stats.acRate ?? "N/A";
+    totalAccepted = stats.totalAccepted ?? "N/A";
+    totalSubmission = stats.totalSubmission ?? "N/A";
+  }
+
+  // Parse similar questions safely
+  let similarQuestions: { title: string; titleSlug: string; difficulty: string }[] = [];
+  if (problem.similarQuestions) {
+    similarQuestions = JSON.parse(problem.similarQuestions);
+  }
+
+  const snippets = problem.codeSnippets ?? [];
+  const defaultIndex = defaultLang
+    ? snippets.findIndex((s) => s.langSlug === defaultLang)
+    : -1;
+  const snippetOptions = snippets
+    .map(
+      (s, i) =>
+        `<option value="${i}"${i === defaultIndex ? " selected" : ""}>${escapeHtml(s.lang)}</option>`
+    )
+    .join("");
+
+  const snippetsJson = escapeScriptJson(JSON.stringify(
+    (problem.codeSnippets ?? []).map((s) => ({
+      lang: s.lang,
+      langSlug: s.langSlug,
+      code: s.code,
+    }))
+  ));
+  const problemJson = escapeScriptJson(
+    JSON.stringify({
+      questionId: problem.questionId,
+      questionFrontendId: problem.questionFrontendId,
+      title: problem.title,
+      titleSlug: problem.titleSlug,
+      codeSnippets: problem.codeSnippets ?? [],
+    })
+  );
+
+  // Hints
+  const hintsHtml = problem.hints?.length
+    ? problem.hints
+      .map(
+        (h, i) =>
+          `<details class="hint"><summary>Hint ${i + 1}</summary><p>${h}</p></details>`
+      )
+      .join("")
+    : '<p class="muted">No hints available.</p>';
+
+  // Similar questions
+  const similarHtml = similarQuestions.length
+    ? similarQuestions
+      .map(
+        (q) =>
+          `<span class="tag similar-tag" style="cursor:pointer; color: var(--${q.difficulty.toLowerCase()}); border-color: var(--${q.difficulty.toLowerCase()});" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)}</span>`
+      )
+      .join(" ")
+    : '<span class="muted">None</span>';
+
+  const dailyBadge = dailyDate
+    ? `<span>Daily Question · ${dailyDate}</span>`
+    : "";
+
+  let statusText = "";
+  if (problem.status === "ac") {
+    statusText = "Solved";
+  } else if (problem.status === "notac") {
+    statusText = "Attempted";
+  }
+
+  return /* html */ `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${escapeHtml(problem.title)}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --radius: 8px;
+      --easy: #00b8a3;
+      --medium: #ffc01e;
+      --hard: #ff375f;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--vscode-font-family, system-ui, sans-serif);
+      font-size: var(--vscode-font-size, 14px);
+      color: var(--vscode-foreground);
+      background: var(--vscode-editor-background);
+      padding: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    a { color: var(--vscode-textLink-foreground); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1 { font-size: 1.5em; font-weight: 700; margin-bottom: 8px; }
+    h2 { font-size: 1em; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
+    p { line-height: 1.65; }
+    pre { background: var(--vscode-textBlockQuote-background); border: 1px solid var(--vscode-textBlockQuote-border); border-radius: var(--radius); padding: 12px 16px; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+    code { font-family: var(--vscode-editor-font-family, monospace); font-size: 0.9em; }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 16px; }
+    .badge {
+      padding: 2px 10px;
+      border-radius: 99px;
+      font-size: 0.78em;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .difficulty { background: ${difficultyColor}22; color: ${difficultyColor}; border: 1px solid ${difficultyColor}55; }
+    .stat-badge { background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); }
+    .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.78em;
+      background: var(--vscode-badge-background);
+      color: var(--vscode-badge-foreground);
+      margin: 2px;
+    }
+    .similar-tag {
+      background: transparent;
+      border: 1px solid var(--vscode-badge-background);
+      color: var(--vscode-foreground);
+    }
+    .tags { margin-bottom: 16px; }
+    .divider { border: none; border-top: 1px solid var(--vscode-widget-border, #333); margin: 20px 0; }
+    .problem-content img { max-width: 100%; }
+    .problem-content ul, .problem-content ol { padding-left: 20px; }
+    .problem-content li { margin: 4px 0; }
+    .problem-content blockquote { border-left: 3px solid var(--vscode-textBlockQuote-border); padding-left: 12px; opacity: 0.85; margin: 8px 0; }
+    .hint { background: var(--vscode-textBlockQuote-background); border: 1px solid var(--vscode-widget-border, #333); border-radius: var(--radius); padding: 10px 14px; margin: 8px 0; }
+    .hint summary { cursor: pointer; font-weight: 500; user-select: none; }
+    .hint p { margin-top: 8px; }
+    .snippet-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .snippet-bar select {
+      background: var(--vscode-dropdown-background);
+      color: var(--vscode-dropdown-foreground);
+      border: 1px solid var(--vscode-dropdown-border);
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.9em;
+    }
+    .btn {
+      background: var(--vscode-button-background);
+      color: var(--vscode-button-foreground);
+      border: none;
+      border-radius: 4px;
+      padding: 4px 12px;
+      cursor: pointer;
+      font-size: 0.85em;
+      font-weight: 500;
+    }
+    .btn:hover { background: var(--vscode-button-hoverBackground); }
+    .btn-secondary {
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
+    }
+    .btn-secondary:hover { background: var(--vscode-button-secondaryHoverBackground); }
+    .snippet-code { position: relative; }
+    .copy-notice { font-size: 0.8em; color: var(--vscode-notificationsInfoIcon-foreground); margin-left: 8px; opacity: 0; transition: opacity 0.3s; }
+    .copy-notice.show { opacity: 1; }
+    .muted { opacity: 0.55; font-style: italic; }
+    .open-link { margin-top: -2px; }
+  </style>
+</head>
+<body>
+  <h1 style="display: flex; align-items: center; justify-content: space-between;">
+    <span>
+      ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
+      <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
+    </span>
+    ${statusText ? `<span class="badge" style="font-size: 0.55em; color:${statusColor}">${statusText}</span>` : ""}
+  </h1>
+
+  <div class="meta">
+    ${dailyBadge}
+    <span class="badge difficulty">${escapeHtml(problem.difficulty)}</span>
+    <span class="badge stat-badge"><i class="fa-regular fa-thumbs-up" style="color: rgb(255, 255, 255);"></i> ${problem.likes.toLocaleString()}</span>
+    <span class="badge stat-badge"><i class="fa-regular fa-thumbs-down" style="color: rgb(255, 255, 255);"></i> ${problem.dislikes.toLocaleString()}</span>
+    ${problem.isLiked ? '<span class="badge stat-badge" title="You liked this problem">❤️</span>' : ""}
+    <span class="badge stat-badge">Accepted: <strong>${totalAccepted}</strong>/${totalSubmission}</span>
+    <span class="badge stat-badge">Acceptance Rate: ${acRate}</span>
+    ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}
+  </div>
+
+  <hr class="divider" />
+
+  <div class="problem-content">
+    ${problem.content ?? "<p>Content not available.</p>"}
+  </div>
+
+  <hr class="divider" />
+
+  <h2>Hints</h2>
+  ${hintsHtml}
+
+  <hr class="divider" />
+
+  <h2>Code Snippets</h2>
+  ${(problem.codeSnippets ?? []).length > 0
+        ? `<div class="snippet-bar">
+           <select id="langSelect" onchange="updateSnippet()">${snippetOptions}</select>
+           <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
+           <button class="btn" onclick="openSolution()">Open in Editor</button>
+           <button class="btn btn-secondary" onclick="submitSolution()">Submit Active File</button>
+           <span class="copy-notice" id="copyNotice">Copied!</span>
+         </div>
+         <div class="snippet-code">
+           <pre><code id="snippetCode"></code></pre>
+         </div>`
+        : '<p class="muted">No code snippets available.</p>'
+      }
+
+  <hr class="divider" />
+
+  <h2>Topics</h2>
+  <div class="tags">
+    ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
+  </div>
+
+  <h2>Similar Questions</h2>
+  <div>${similarHtml}</div>
+
+  ${problem.note ? `<h2>Note</h2>\\n  <div class="problem-content">\\n    <p>${escapeHtml(problem.note)}</p>\\n  </div>\\n` : ""}
+
+  <script>
+    const vscode = acquireVsCodeApi();
+    const snippets = ${snippetsJson};
+    const problem = ${problemJson};
+
+    function updateSnippet() {
+      const idx = document.getElementById('langSelect')?.value ?? '0';
+      const code = snippets[parseInt(idx)]?.code ?? '';
+      const el = document.getElementById('snippetCode');
+      if (el) el.textContent = code;
+    }
+
+    function copySnippet() {
+      const idx = document.getElementById('langSelect')?.value ?? '0';
+      const code = snippets[parseInt(idx)]?.code ?? '';
+      navigator.clipboard.writeText(code).then(() => {
+        const n = document.getElementById('copyNotice');
+        if (n) {
+          n.classList.add('show');
+          setTimeout(() => n.classList.remove('show'), 1800);
+        }
+      });
+    }
+
+    function openProblem(slug) {
+      vscode.postMessage({ command: 'searchProblem', slug });
+    }
+
+    function openSolution() {
+      const snippetIndex = parseInt(document.getElementById('langSelect')?.value ?? '0');
+      vscode.postMessage({ command: 'openSolution', problem, snippetIndex });
+    }
+
+    function submitSolution() {
+      vscode.postMessage({ command: 'submitSolution' });
+    }
+
+    // init
+    updateSnippet();
+  </script>
+</body>
+</html>`;
+}
+
+export function escapeHtml(str: string): string {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+export function escapeScriptJson(json: string): string {
+  return json.replace(/</g, "\\\u003c");
+}
