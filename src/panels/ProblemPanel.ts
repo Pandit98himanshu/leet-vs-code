@@ -108,10 +108,14 @@ export class ProblemPanel {
 
     // Parse stats JSON safely
     let acRate = "N/A";
+    let totalAccepted = "N/A";
+    let totalSubmission = "N/A";
 
     if (problem.stats) {
       const stats = JSON.parse(problem.stats);
       acRate = stats.acRate ?? "N/A";
+      totalAccepted = stats.totalAccepted ?? "N/A";
+      totalSubmission = stats.totalSubmission ?? "N/A";
     }
 
     // Parse similar questions safely
@@ -290,7 +294,8 @@ export class ProblemPanel {
     <span class="badge stat-badge">👍 ${problem.likes.toLocaleString()}</span>
     <span class="badge stat-badge">👎 ${problem.dislikes.toLocaleString()}</span>
     ${problem.isLiked ? '<span class="badge stat-badge" title="You liked this problem">❤️</span>' : ""}
-    <span class="badge stat-badge">✅ AC Rate: ${acRate}</span>
+    <span class="badge stat-badge">Accepted: <strong>${totalAccepted}</strong>/${totalSubmission}</span>
+    <span class="badge stat-badge">Acceptance Rate: ${acRate}</span>
     ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}
   </div>
 
