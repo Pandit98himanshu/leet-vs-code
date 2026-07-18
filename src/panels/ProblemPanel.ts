@@ -171,7 +171,7 @@ export class ProblemPanel {
       ? similarQuestions
         .map(
           (q) =>
-            `<span class="tag" style="cursor:pointer" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)} <small>(${escapeHtml(q.difficulty)})</small></span>`
+            `<span class="tag similar-tag" style="cursor:pointer; color: var(--${q.difficulty.toLowerCase()}); border-color: var(--${q.difficulty.toLowerCase()});" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)}</span>`
         )
         .join(" ")
       : '<span class="muted">None</span>';
@@ -237,6 +237,11 @@ export class ProblemPanel {
       background: var(--vscode-badge-background);
       color: var(--vscode-badge-foreground);
       margin: 2px;
+    }
+    .similar-tag {
+      background: transparent;
+      border: 1px solid var(--vscode-badge-background);
+      color: var(--vscode-foreground);
     }
     .tags { margin-bottom: 16px; }
     .divider { border: none; border-top: 1px solid var(--vscode-widget-border, #333); margin: 20px 0; }
