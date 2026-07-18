@@ -6,7 +6,12 @@ import { getTestResultHtml, getSubmitResultHtml, getLoadingHtml } from "../views
 export class TestResultsProvider implements vscode.WebviewViewProvider {
   public static readonly viewType = "leetvscodeTestResultsView";
   private _view?: vscode.WebviewView;
-  private _lastHtml?: string;
+  private _lastState?: {
+    type: "test" | "submit" | "loading";
+    result?: any;
+    metadata?: any;
+    message?: string;
+  };
 
   constructor(private readonly _extensionUri: vscode.Uri) { }
 
@@ -29,13 +34,23 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._lastHtml ?? getLoadingHtml("Waiting for test results...", this.getStyleUri());
+    if (this._lastState) {
+      if (this._lastState.type === "test") {
+        webviewView.webview.html = getTestResultHtml(this._lastState.result, this._lastState.metadata, this.getStyleUri());
+      } else if (this._lastState.type === "submit") {
+        webviewView.webview.html = getSubmitResultHtml(this._lastState.result, this._lastState.metadata, this.getStyleUri());
+      } else {
+        webviewView.webview.html = getLoadingHtml(this._lastState.message ?? "Waiting for test results...", this.getStyleUri());
+      }
+    } else {
+      webviewView.webview.html = getLoadingHtml("Waiting for test results...", this.getStyleUri());
+    }
   }
 
   public updateResult(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }) {
-    this._lastHtml = getTestResultHtml(result, metadata, this.getStyleUri());
+    this._lastState = { type: "test", result, metadata };
     if (this._view) {
-      this._view.webview.html = this._lastHtml;
+      this._view.webview.html = getTestResultHtml(result, metadata, this.getStyleUri());
       this._view.show?.(true);
     } else {
       vscode.commands.executeCommand(`${TestResultsProvider.viewType}.focus`);
@@ -43,9 +58,9 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
   }
 
   public updateSubmitResult(result: SubmitResult, metadata: { title: string; questionFrontendId: string }) {
-    this._lastHtml = getSubmitResultHtml(result, metadata, this.getStyleUri());
+    this._lastState = { type: "submit", result, metadata };
     if (this._view) {
-      this._view.webview.html = this._lastHtml;
+      this._view.webview.html = getSubmitResultHtml(result, metadata, this.getStyleUri());
       this._view.show?.(true);
     } else {
       vscode.commands.executeCommand(`${TestResultsProvider.viewType}.focus`);
@@ -53,7 +68,7 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
   }
 
   public clear() {
-    this._lastHtml = undefined;
+    this._lastState = { type: "loading", message: "Waiting for test results..." };
     if (this._view) {
       this._view.webview.html = getLoadingHtml("Waiting for test results...", this.getStyleUri());
     }
