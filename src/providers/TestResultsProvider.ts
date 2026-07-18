@@ -10,6 +10,13 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
 
   constructor(private readonly _extensionUri: vscode.Uri) { }
 
+  private getStyleUri(): string {
+    if (!this._view) return "";
+    return this._view.webview.asWebviewUri(
+      vscode.Uri.joinPath(this._extensionUri, "media", "styles.css")
+    ).toString();
+  }
+
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     context: vscode.WebviewViewResolveContext,
@@ -22,11 +29,11 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this._extensionUri],
     };
 
-    webviewView.webview.html = this._lastHtml ?? getLoadingHtml("Waiting for test results...");
+    webviewView.webview.html = this._lastHtml ?? getLoadingHtml("Waiting for test results...", this.getStyleUri());
   }
 
   public updateResult(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }) {
-    this._lastHtml = getTestResultHtml(result, metadata);
+    this._lastHtml = getTestResultHtml(result, metadata, this.getStyleUri());
     if (this._view) {
       this._view.webview.html = this._lastHtml;
       this._view.show?.(true);
@@ -36,7 +43,7 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
   }
 
   public updateSubmitResult(result: SubmitResult, metadata: { title: string; questionFrontendId: string }) {
-    this._lastHtml = getSubmitResultHtml(result, metadata);
+    this._lastHtml = getSubmitResultHtml(result, metadata, this.getStyleUri());
     if (this._view) {
       this._view.webview.html = this._lastHtml;
       this._view.show?.(true);
@@ -48,7 +55,7 @@ export class TestResultsProvider implements vscode.WebviewViewProvider {
   public clear() {
     this._lastHtml = undefined;
     if (this._view) {
-      this._view.webview.html = getLoadingHtml("Waiting for test results...");
+      this._view.webview.html = getLoadingHtml("Waiting for test results...", this.getStyleUri());
     }
   }
 }

@@ -31,14 +31,16 @@ export class UserProfilePanel {
     UserProfilePanel.currentPanel = new UserProfilePanel(
       panel,
       profile,
-      contestInfo
+      contestInfo,
+      extensionUri
     );
   }
 
   private constructor(
     panel: vscode.WebviewPanel,
     profile: UserProfile,
-    contestInfo: ContestInfo
+    contestInfo: ContestInfo,
+    private readonly _extensionUri?: vscode.Uri
   ) {
     this._panel = panel;
     this._update(profile, contestInfo);
@@ -52,7 +54,13 @@ export class UserProfilePanel {
   }
 
   private _getHtml(profile: UserProfile, contestInfo: ContestInfo): string {
-    return getUserProfileHtml(profile, contestInfo);
+    let styleUri = "";
+    if (this._extensionUri) {
+      styleUri = this._panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "media", "styles.css")
+      ).toString();
+    }
+    return getUserProfileHtml(profile, contestInfo, styleUri);
   }
 
   dispose() {

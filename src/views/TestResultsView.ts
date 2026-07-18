@@ -1,14 +1,16 @@
 import { TestResult } from "../submission/TestService";
 import { SubmitResult } from "../submission/SubmitService";
+import { escapeHtml } from "../utils/html";
 
-export function getTestResultHtml(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }): string {
-  let content = `<h2>${metadata.questionFrontendId}. ${metadata.title}</h2>`;
-  content += `<p><strong>Status:</strong> ${result.statusMsg ?? result.state ?? "Tested"}</p>`;
-
+function getCommonResultHtml(result: TestResult | SubmitResult): string {
+  let content = "";
   if (result.totalCorrect !== undefined && result.totalTestcases !== undefined) {
-    const allPassed = result.correctAnswer
-      ? ' style="color: green;"' : ' style="color: red;"';
-    content += `<p${allPassed}>${result.totalCorrect}/${result.totalTestcases} testcases passed.</p>`;
+    const isTestResult = (result as TestResult).correctAnswer !== undefined;
+    let colorStyle = "";
+    if (isTestResult) {
+      colorStyle = (result as TestResult).correctAnswer ? ' style="color: green;"' : ' style="color: red;"';
+    }
+    content += `<p${colorStyle}>${result.totalCorrect}/${result.totalTestcases} testcases passed.</p>`;
   }
 
   if (result.runtime && result.memory) {
@@ -22,6 +24,14 @@ export function getTestResultHtml(result: TestResult, metadata: { title: string;
   if (result.runtimeError) {
     content += `<h4>Runtime Error</h4><pre><code>${escapeHtml(result.runtimeError)}</code></pre>`;
   }
+  return content;
+}
+
+export function getTestResultHtml(result: TestResult, metadata: { title: string; questionFrontendId: string; dataInput?: string }, styleUri: string): string {
+  let content = `<h2>${metadata.questionFrontendId}. ${metadata.title}</h2>`;
+  content += `<p><strong>Status:</strong> ${result.statusMsg ?? result.state ?? "Tested"}</p>`;
+
+  content += getCommonResultHtml(result);
 
   let inputTestcases: string[] = [];
   if (metadata.dataInput && result.totalTestcases) {
@@ -49,10 +59,10 @@ export function getTestResultHtml(result: TestResult, metadata: { title: string;
     }
   }
 
-  return wrapHtml(content);
+  return wrapHtml(content, styleUri);
 }
 
-export function getSubmitResultHtml(result: SubmitResult, metadata: { title: string; questionFrontendId: string }): string {
+export function getSubmitResultHtml(result: SubmitResult, metadata: { title: string; questionFrontendId: string }, styleUri: string): string {
   let content = `<h2>${metadata.questionFrontendId}. ${metadata.title}</h2>`;
   content += `<h3>Submission Result</h3>`;
 
@@ -60,21 +70,7 @@ export function getSubmitResultHtml(result: SubmitResult, metadata: { title: str
   const statusColorStyle = isAccepted ? ' style="color: green;"' : ' style="color: red;"';
   content += `<p><strong>Status:</strong> <span${statusColorStyle}>${result.statusMsg ?? result.state ?? "Submitted"}</span></p>`;
 
-  if (result.totalCorrect !== undefined && result.totalTestcases !== undefined) {
-    content += `<p>${result.totalCorrect}/${result.totalTestcases} testcases passed.</p>`;
-  }
-
-  if (result.runtime && result.memory) {
-    content += `<p><strong>Runtime:</strong> ${result.runtime} | <strong>Memory:</strong> ${result.memory}</p>`;
-  }
-
-  if (result.compileError) {
-    content += `<h4>Compile Error</h4><pre><code>${escapeHtml(result.compileError)}</code></pre>`;
-  }
-
-  if (result.runtimeError) {
-    content += `<h4>Runtime Error</h4><pre><code>${escapeHtml(result.runtimeError)}</code></pre>`;
-  }
+  content += getCommonResultHtml(result);
 
   if (result.lastTestcase) {
     content += `<h4>Testcase Failed</h4>`;
@@ -87,53 +83,24 @@ export function getSubmitResultHtml(result: SubmitResult, metadata: { title: str
     }
   }
 
-  return wrapHtml(content);
+  return wrapHtml(content, styleUri);
 }
 
-export function getLoadingHtml(message: string): string {
-  return wrapHtml(message);
+export function getLoadingHtml(message: string, styleUri: string): string {
+  return wrapHtml(message, styleUri);
 }
 
-function wrapHtml(content: string): string {
+function wrapHtml(content: string, styleUri: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Test Results</title>
-  <style>
-    body {
-      font-family: var(--vscode-font-family);
-      color: var(--vscode-editor-foreground);
-      background-color: var(--vscode-editor-background);
-      padding: 10px;
-    }
-    h2, h3, h4 {
-      color: var(--vscode-editor-foreground);
-    }
-    pre {
-      background-color: var(--vscode-textCodeBlock-background);
-      padding: 8px;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    code {
-      font-family: var(--vscode-editor-font-family);
-    }
-  </style>
+  <link rel="stylesheet" href="${styleUri}" />
 </head>
 <body>
   ${content}
 </body>
 </html>`;
-}
-
-function escapeHtml(unsafe?: string): string {
-  if (!unsafe) return "";
-  return unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 }

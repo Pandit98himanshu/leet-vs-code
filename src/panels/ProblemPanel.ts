@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { Problem, getProblemHtml, escapeHtml } from "../views/ProblemView";
+import { Problem, getProblemHtml } from "../views/ProblemView";
+import { escapeHtml } from "../utils/html";
 
 export class ProblemPanel {
   private static currentPanel: ProblemPanel | undefined;
@@ -27,13 +28,14 @@ export class ProblemPanel {
       { enableScripts: true, retainContextWhenHidden: true }
     );
 
-    ProblemPanel.currentPanel = new ProblemPanel(panel, problem, dailyDate);
+    ProblemPanel.currentPanel = new ProblemPanel(panel, problem, dailyDate, extensionUri);
   }
 
   private constructor(
     panel: vscode.WebviewPanel,
     problem: Problem,
-    dailyDate?: string
+    dailyDate?: string,
+    private readonly _extensionUri?: vscode.Uri
   ) {
     this._panel = panel;
     this._update(problem, dailyDate);
@@ -75,7 +77,14 @@ export class ProblemPanel {
       .getConfiguration("leetvscode")
       .get<string>("defaultLanguage", "");
 
-    return getProblemHtml(problem, dailyDate, defaultLang);
+    let styleUri = "";
+    if (this._extensionUri) {
+      styleUri = this._panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(this._extensionUri, "media", "styles.css")
+      ).toString();
+    }
+
+    return getProblemHtml(problem, styleUri, dailyDate, defaultLang);
   }
 
   dispose() {

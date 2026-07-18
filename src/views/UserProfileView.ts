@@ -1,3 +1,5 @@
+import { escapeHtml } from "../utils/html";
+
 export interface UserProfile {
   allQuestionsCount: { difficulty: string; count: number }[];
   matchedUser: {
@@ -48,7 +50,7 @@ export interface ContestInfo {
   }[];
 }
 
-export function getUserProfileHtml(profile: UserProfile, contestInfo: ContestInfo): string {
+export function getUserProfileHtml(profile: UserProfile, contestInfo: ContestInfo, styleUri: string): string {
   const user = profile.matchedUser!;
   const p = user.profile;
   const stats = user.submitStats;
@@ -135,57 +137,7 @@ export function getUserProfileHtml(profile: UserProfile, contestInfo: ContestInf
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>@${escapeHtml(user.username)}</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: var(--vscode-font-family, system-ui, sans-serif);
-      font-size: var(--vscode-font-size, 14px);
-      color: var(--vscode-foreground);
-      background: var(--vscode-editor-background);
-      padding: 24px;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    a { color: var(--vscode-textLink-foreground); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    h2 { font-size: 0.9em; font-weight: 600; margin: 20px 0 10px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.7; }
-    .header { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 24px; }
-    .avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 2px solid var(--vscode-widget-border, #444); flex-shrink: 0; }
-    .avatar-placeholder { width: 72px; height: 72px; border-radius: 50%; background: var(--vscode-badge-background); display: flex; align-items: center; justify-content: center; font-size: 2em; flex-shrink: 0; }
-    .user-info { flex: 1; }
-    .username { font-size: 1.4em; font-weight: 700; }
-    .realname { opacity: 0.7; font-size: 0.95em; margin-top: 2px; }
-    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .chip { padding: 2px 8px; border-radius: 4px; font-size: 0.78em; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); }
-    .divider { border: none; border-top: 1px solid var(--vscode-widget-border, #333); margin: 20px 0; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 16px; }
-    .stat-card {
-      background: var(--vscode-textBlockQuote-background);
-      border: 1px solid var(--vscode-widget-border, #333);
-      border-radius: 8px;
-      padding: 14px;
-      text-align: center;
-    }
-    .stat-card .value { font-size: 1.8em; font-weight: 700; }
-    .stat-card .label { font-size: 0.78em; opacity: 0.65; margin-top: 4px; }
-    .progress-bar { background: var(--vscode-progressBar-background, #333); border-radius: 99px; height: 8px; overflow: hidden; margin: 8px 0; }
-    .progress-fill { height: 100%; border-radius: 99px; background: var(--vscode-textLink-foreground); transition: width 0.4s ease; }
-    .diff-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
-    .diff-item { flex: 1; min-width: 100px; background: var(--vscode-textBlockQuote-background); border-radius: 6px; padding: 8px 12px; border: 1px solid var(--vscode-widget-border, #333); }
-    .diff-item .d-count { font-size: 1.2em; font-weight: 700; }
-    .diff-item .d-label { font-size: 0.75em; opacity: 0.65; }
-    .easy { border-top: 3px solid #00b8a3; }
-    .medium { border-top: 3px solid #ffc01e; }
-    .hard { border-top: 3px solid #ff375f; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-    th { text-align: left; padding: 6px 10px; opacity: 0.6; font-weight: 500; border-bottom: 1px solid var(--vscode-widget-border, #333); font-size: 0.85em; }
-    td { padding: 6px 10px; border-bottom: 1px solid var(--vscode-widget-border, #22222230); }
-    tr:last-child td { border-bottom: none; }
-    .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.78em; background: var(--vscode-badge-background); color: var(--vscode-badge-foreground); margin: 2px; }
-    .badge-item { display: inline-block; margin: 2px 4px; font-size: 0.85em; }
-    .muted { opacity: 0.5; font-style: italic; }
-    .about { background: var(--vscode-textBlockQuote-background); border-left: 3px solid var(--vscode-textLink-foreground); border-radius: 0 6px 6px 0; padding: 10px 14px; margin-bottom: 4px; font-size: 0.9em; line-height: 1.6; }
-  </style>
+  <link rel="stylesheet" href="${styleUri}" />
 </head>
 <body>
 
@@ -283,12 +235,4 @@ export function getUserProfileHtml(profile: UserProfile, contestInfo: ContestInf
 
 </body>
 </html>`;
-}
-
-export function escapeHtml(str: string | null | undefined): string {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
