@@ -53,15 +53,15 @@
           "icon": "$(list-unordered)"
         },
         {
+          "id": "leetvscodeDailyQuestions",
+          "name": "Daily Questions",
+          "icon": "$(calendar)"
+        },
+        {
           "id": "leetvscodeSubmissions",
           "name": "My Submissions",
           "icon": "$(history)",
           "visibility": "collapsed"
-        },
-        {
-          "id": "leetvscodeDailyQuestions",
-          "name": "Daily Questions",
-          "icon": "$(calendar)"
         }
       ],
       "leetvscodePanel": [
@@ -153,6 +153,16 @@
           "group": "navigation@3"
         },
         {
+          "command": "leetvscode.setSession",
+          "when": "view == leetvscodeProblems && !leetvscode:hasSession",
+          "group": "navigation@4"
+        },
+        {
+          "command": "leetvscode.clearSession",
+          "when": "view == leetvscodeProblems && leetvscode:hasSession",
+          "group": "navigation@4"
+        },
+        {
           "command": "leetvscode.prevMonthDaily",
           "when": "view == leetvscodeDailyQuestions",
           "group": "navigation@1"
@@ -166,21 +176,6 @@
           "command": "leetvscode.showDailyChallenge",
           "when": "view == leetvscodeDailyQuestions",
           "group": "navigation@3"
-        },
-        {
-          "command": "leetvscode.searchProblem",
-          "when": "view == leetvscodeDailyQuestions",
-          "group": "navigation@4"
-        },
-        {
-          "command": "leetvscode.setSession",
-          "when": "view == leetvscodeProblems && !leetvscode:hasSession",
-          "group": "navigation@4"
-        },
-        {
-          "command": "leetvscode.clearSession",
-          "when": "view == leetvscodeProblems && leetvscode:hasSession",
-          "group": "navigation@4"
         },
         {
           "command": "leetvscode.showMySubmissions",
