@@ -237,6 +237,51 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      "leetvscode.openSubmission",
+      async (submissionId: number, titleSlug: string) => {
+        const lc = await sessionManager.getLeetCodeClient();
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: `Fetching submission...`,
+            cancellable: false,
+          },
+          async () => {
+            try {
+              const detail = await lc.submission(Number(submissionId));
+              if (!detail) {
+                 vscode.window.showErrorMessage("Submission not found.");
+                 return;
+              }
+              const document = await vscode.workspace.openTextDocument({
+                content: detail.code,
+                language: detail.lang?.name || "plaintext" 
+              });
+              
+              if (detail.question?.questionId) {
+                 solutionMetadata.set(document.uri.toString(), {
+                   questionId: detail.question.questionId,
+                   questionFrontendId: "",
+                   title: titleSlug,
+                   titleSlug: detail.question.titleSlug || titleSlug,
+                   langSlug: detail.lang?.name || ""
+                 });
+              }
+
+              await vscode.window.showTextDocument(document, { viewColumn: vscode.ViewColumn.Active, preserveFocus: false, preview: false });
+            } catch (err) {
+              vscode.window.showErrorMessage(
+                `Failed to fetch submission: ${String(err)}`
+              );
+            }
+          }
+        );
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       "leetvscode.showUserProfile",
       async () => {
         const username = await vscode.window.showInputBox({
