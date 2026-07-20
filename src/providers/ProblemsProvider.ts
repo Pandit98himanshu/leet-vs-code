@@ -34,6 +34,7 @@ export class ProblemsProvider
   private readonly diskCache = new ProblemsCache();
   private readonly problemCache = new Map<DifficultyFilter, ProblemSummary[]>();
   private readonly loadingProblems = new Map<DifficultyFilter, Promise<ProblemSummary[]>>();
+  private readonly abortControllers = new Map<DifficultyFilter, AbortController>();
 
   constructor(private readonly sessionManager: SessionManager) {
     // Auto-refresh when the user signs in or out
@@ -41,6 +42,11 @@ export class ProblemsProvider
   }
 
   refresh(): void {
+    for (const controller of this.abortControllers.values()) {
+      controller.abort();
+    }
+    this.abortControllers.clear();
+
     this.diskCache.clear();
     this.problemCache.clear();
     this.loadingProblems.clear();
@@ -134,6 +140,14 @@ export class ProblemsProvider
       return inFlight;
     }
 
+    const existingController = this.abortControllers.get(difficulty);
+    if (existingController) {
+      existingController.abort();
+    }
+
+    const abortController = new AbortController();
+    this.abortControllers.set(difficulty, abortController);
+
     const firstChunkPromise = new Promise<ProblemSummary[]>((resolve, reject) => {
       let isFirst = true;
       const onFirstChunk = (chunk: ProblemSummary[]) => {
@@ -143,7 +157,7 @@ export class ProblemsProvider
         }
       };
 
-      const loadPromise = this.loadProblems(difficulty, onFirstChunk).catch((err) => {
+      const loadPromise = this.loadProblems(difficulty, onFirstChunk, abortController.signal).catch((err) => {
         if (isFirst) {
           reject(err);
         } else {
@@ -155,6 +169,9 @@ export class ProblemsProvider
         if (this.loadingProblems.get(difficulty) === firstChunkPromise) {
           this.loadingProblems.delete(difficulty);
         }
+        if (this.abortControllers.get(difficulty) === abortController) {
+          this.abortControllers.delete(difficulty);
+        }
       });
     });
 
@@ -165,14 +182,15 @@ export class ProblemsProvider
 
   private async loadProblems(
     difficulty: DifficultyFilter,
-    onFirstChunk: (questions: ProblemSummary[]) => void
+    onFirstChunk: (questions: ProblemSummary[]) => void,
+    signal: AbortSignal
   ): Promise<void> {
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        cancellable: false,
+        cancellable: true,
       },
-      async (progress) => {
+      async (progress, token) => {
         const lc = await this.sessionManager.getLeetCodeClient();
         const allQuestions: ProblemSummary[] = [];
         const limit = 50;
@@ -181,6 +199,13 @@ export class ProblemsProvider
         let isFirst = true;
 
         while (true) {
+          if (signal.aborted || token.isCancellationRequested) {
+            if (isFirst) {
+              onFirstChunk([]);
+            }
+            return;
+          }
+
           const filters =
             difficulty === "All"
               ? {}
@@ -188,6 +213,14 @@ export class ProblemsProvider
                 difficulty: difficulty.toUpperCase() as "EASY" | "MEDIUM" | "HARD",
               };
           const result = await lc.problems({ limit, offset, filters });
+          
+          if (signal.aborted || token.isCancellationRequested) {
+            if (isFirst) {
+              onFirstChunk([]);
+            }
+            return;
+          }
+
           const questions = result?.questions ?? [];
           total = result.total;
 
