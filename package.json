@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
