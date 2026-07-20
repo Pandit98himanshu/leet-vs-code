@@ -134,22 +134,39 @@ export class ProblemsProvider
       return inFlight;
     }
 
-    const loadPromise = this.loadProblems(difficulty);
-    this.loadingProblems.set(difficulty, loadPromise);
+    const firstChunkPromise = new Promise<ProblemSummary[]>((resolve, reject) => {
+      let isFirst = true;
+      const onFirstChunk = (chunk: ProblemSummary[]) => {
+        if (isFirst) {
+          isFirst = false;
+          resolve(chunk);
+        }
+      };
 
-    try {
-      const questions = await loadPromise;
-      this.diskCache.set(difficulty, questions);
-      this.problemCache.set(difficulty, questions);
-      return questions;
-    } finally {
-      this.loadingProblems.delete(difficulty);
-    }
+      const loadPromise = this.loadProblems(difficulty, onFirstChunk).catch((err) => {
+        if (isFirst) {
+          reject(err);
+        } else {
+          vscode.window.showErrorMessage(`Failed to load remaining problems: ${String(err)}`);
+        }
+      });
+
+      loadPromise.finally(() => {
+        if (this.loadingProblems.get(difficulty) === firstChunkPromise) {
+          this.loadingProblems.delete(difficulty);
+        }
+      });
+    });
+
+    this.loadingProblems.set(difficulty, firstChunkPromise);
+
+    return firstChunkPromise;
   }
 
   private async loadProblems(
-    difficulty: DifficultyFilter
-  ): Promise<ProblemSummary[]> {
+    difficulty: DifficultyFilter,
+    onFirstChunk: (questions: ProblemSummary[]) => void
+  ): Promise<void> {
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -161,6 +178,7 @@ export class ProblemsProvider
         const limit = 50;
         let offset = 0;
         let total: number | undefined;
+        let isFirst = true;
 
         while (true) {
           const filters =
@@ -174,11 +192,23 @@ export class ProblemsProvider
           total = result.total;
 
           if (!questions.length) {
+            if (isFirst) {
+              onFirstChunk([]);
+            }
             break;
           }
 
           allQuestions.push(...questions);
           offset += questions.length;
+
+          this.problemCache.set(difficulty, [...allQuestions]);
+
+          if (isFirst) {
+            isFirst = false;
+            onFirstChunk([...allQuestions]);
+          } else {
+            this._onDidChangeTreeData.fire();
+          }
 
           progress.report({
             message: `Loaded ${allQuestions.length} / ${total} problems`,
@@ -189,11 +219,11 @@ export class ProblemsProvider
           }
         }
 
+        this.diskCache.set(difficulty, allQuestions);
+
         progress.report({
           message: `Done — ${allQuestions.length} problems loaded`,
         });
-
-        return allQuestions;
       }
     );
   }
