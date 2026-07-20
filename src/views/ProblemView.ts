@@ -199,13 +199,17 @@ export function getProblemHtml(
 
   <hr class="divider" />
 
-  <h2>Topics</h2>
-  <div class="tags">
-    ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
-  </div>
+  <details class="hint">
+    <summary>Topics</summary>
+    <div class="tags" style="margin-top: 0.5em;">
+      ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
+    </div>
+  </details>
 
-  <h2>Similar Questions</h2>
-  <div>${similarHtml}</div>
+  <details class="hint">
+    <summary>Similar Questions</summary>
+    <div style="margin-top: 0.5em;">${similarHtml}</div>
+  </details>
 
   ${problem.note ? `<h2>Note</h2>\\n  <div class="problem-content">\\n    <p>${escapeHtml(problem.note)}</p>\\n  </div>\\n` : ""}
 
