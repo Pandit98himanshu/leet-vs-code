@@ -194,7 +194,7 @@ export class DailyQuestionProvider implements vscode.TreeDataProvider<ProblemIte
               );
               item.tooltip = tags ? `${label}\n${tags}` : label;
               return item;
-            }).filter((item: any) => item !== null);
+            }).filter((item): item is ProblemItem => item !== null);
 
             this.dailyQuestions = newItems;
           }
