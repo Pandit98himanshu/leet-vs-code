@@ -57,6 +57,11 @@
           "name": "My Submissions",
           "icon": "$(history)",
           "visibility": "collapsed"
+        },
+        {
+          "id": "leetvscodeDailyQuestions",
+          "name": "Daily Questions",
+          "icon": "$(calendar)"
         }
       ],
       "leetvscodePanel": [
@@ -121,15 +126,22 @@
         "command": "leetvscode.clearTestResults",
         "title": "Clear Test Results",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "leetvscode.prevMonthDaily",
+        "title": "Previous Month",
+        "icon": "$(arrow-left)",
+        "enablement": "leetvscode:hasPrevMonth"
+      },
+      {
+        "command": "leetvscode.nextMonthDaily",
+        "title": "Next Month",
+        "icon": "$(arrow-right)",
+        "enablement": "leetvscode:hasNextMonth"
       }
     ],
     "menus": {
       "view/title": [
-        {
-          "command": "leetvscode.showDailyChallenge",
-          "when": "view == leetvscodeProblems",
-          "group": "navigation@1"
-        },
         {
           "command": "leetvscode.searchProblem",
           "when": "view == leetvscodeProblems",
@@ -139,6 +151,26 @@
           "command": "leetvscode.showUserProfile",
           "when": "view == leetvscodeProblems",
           "group": "navigation@3"
+        },
+        {
+          "command": "leetvscode.prevMonthDaily",
+          "when": "view == leetvscodeDailyQuestions",
+          "group": "navigation@1"
+        },
+        {
+          "command": "leetvscode.nextMonthDaily",
+          "when": "view == leetvscodeDailyQuestions",
+          "group": "navigation@2"
+        },
+        {
+          "command": "leetvscode.showDailyChallenge",
+          "when": "view == leetvscodeDailyQuestions",
+          "group": "navigation@3"
+        },
+        {
+          "command": "leetvscode.searchProblem",
+          "when": "view == leetvscodeDailyQuestions",
+          "group": "navigation@4"
         },
         {
           "command": "leetvscode.setSession",

@@ -7,6 +7,7 @@ import { UserProfilePanel } from "./panels/UserProfilePanel";
 import { ProblemsProvider } from "./providers/ProblemsProvider";
 import { SubmissionsProvider } from "./providers/SubmissionsProvider";
 import { TestResultsProvider } from "./providers/TestResultsProvider";
+import { DailyQuestionProvider } from "./providers/DailyQuestionProvider";
 import { SessionManager } from "./session/SessionManager";
 import { SubmitResult, SubmitService } from "./submission/SubmitService";
 import { TestService, TestResult } from "./submission/TestService";
@@ -60,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
   const sessionManager = new SessionManager(context);
   const problemsProvider = new ProblemsProvider(sessionManager);
   const submissionsProvider = new SubmissionsProvider(sessionManager);
+  const dailyQuestionProvider = new DailyQuestionProvider(sessionManager);
   const testResultsProvider = new TestResultsProvider(context.extensionUri);
   const submitService = new SubmitService();
   const testService = new TestService();
@@ -81,6 +83,13 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerTreeDataProvider(
       "leetvscodeSubmissions",
       submissionsProvider
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider(
+      "leetvscodeDailyQuestions",
+      dailyQuestionProvider
     )
   );
 
@@ -560,6 +569,24 @@ export function activate(context: vscode.ExtensionContext) {
       "leetvscode.clearTestResults",
       () => {
         testResultsProvider.clear();
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "leetvscode.prevMonthDaily",
+      () => {
+        dailyQuestionProvider.prevMonth();
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      "leetvscode.nextMonthDaily",
+      () => {
+        dailyQuestionProvider.nextMonth();
       }
     )
   );
