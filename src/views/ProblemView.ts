@@ -21,6 +21,7 @@ export interface Problem {
   status?: any;
   note: string | null;
   companyTags?: string[];
+  premiumSolution?: { title: string; link: string; content?: string };
 }
 
 export function getProblemHtml(
@@ -220,6 +221,22 @@ export function getProblemHtml(
     <summary>Similar Questions</summary>
     <div style="margin-top: 0.5em;">${similarHtml}</div>
   </details>
+
+  ${problem.isPaidOnly && problem.premiumSolution ? `
+  <details class="hint">
+    <summary>Solution</summary>
+    <div style="margin-top: 0.5em;">
+      <a href="${escapeHtml(problem.premiumSolution.link)}" style="color: #0066cc; text-decoration: underline;" target="_blank">
+        ${escapeHtml(problem.premiumSolution.title)}
+      </a>
+      ${problem.premiumSolution.content ? `
+      <div class="problem-content" style="margin-top: 1em;">
+        ${problem.premiumSolution.content}
+      </div>
+      ` : ""}
+    </div>
+  </details>
+  ` : ""}
 
   ${problem.note ? `<h2>Note</h2>\\n  <div class="problem-content">\\n    <p>${escapeHtml(problem.note)}</p>\\n  </div>\\n` : ""}
 

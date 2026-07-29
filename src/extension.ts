@@ -153,6 +153,7 @@ export function activate(context: vscode.ExtensionContext) {
                 daily.question.content = caData.content;
               }
               (daily.question as any).companyTags = caData.companyTags;
+              (daily.question as any).premiumSolution = caData.premiumSolution;
               ProblemPanel.createOrShow(
                 context.extensionUri,
                 daily.question,
@@ -233,6 +234,7 @@ export function activate(context: vscode.ExtensionContext) {
                 problem.content = caData.content;
               }
               (problem as any).companyTags = caData.companyTags;
+              (problem as any).premiumSolution = caData.premiumSolution;
               ProblemPanel.createOrShow(context.extensionUri, problem);
             } catch (err) {
               vscode.window.showErrorMessage(
@@ -927,7 +929,7 @@ function formatError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: string | null; companyTags: string[] }> {
+async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: string | null; companyTags: string[]; premiumSolution?: { title: string; link: string } }> {
   try {
     const url = `https://leetcode.ca/all/${frontendId}.html`;
     const res = await fetch(url);
@@ -961,7 +963,86 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
       }
     }
     
-    return { content: extractedContent, companyTags };
+    let premiumSolution: { title: string; link: string; content?: string } | undefined;
+    const solutionStartIndex = data.indexOf('<h3>Problem Solution</h3>');
+    if (solutionStartIndex !== -1) {
+      const solutionEndIndex = data.indexOf('</div>', solutionStartIndex);
+      if (solutionEndIndex !== -1) {
+        const section = data.substring(solutionStartIndex, solutionEndIndex);
+        const regex = /<a[^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/;
+        const match = regex.exec(section);
+        if (match) {
+          premiumSolution = { link: match[1], title: match[2].trim() };
+        }
+      }
+    }
+
+    // Fetch the actual question and solution from the solution page for better formatting/content
+    if (premiumSolution && premiumSolution.link) {
+      try {
+        const solRes = await fetch(premiumSolution.link);
+        if (solRes.ok) {
+          const solData = await solRes.text();
+          
+          // Extract question
+          const startMarker = '<p>Formatted question description:';
+          const qStartIndex = solData.indexOf(startMarker);
+          if (qStartIndex !== -1) {
+            let qEndIndex = solData.length;
+            const endMarkers = [
+              '<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>',
+              '<h1 id="code">', '<h2 id="code">', '<h1>Code</h1>', '<h2>Code</h2>'
+            ];
+            for (const marker of endMarkers) {
+              const idx = solData.indexOf(marker, qStartIndex);
+              if (idx !== -1 && idx < qEndIndex) {
+                qEndIndex = idx;
+              }
+            }
+            
+            let questionHtml = solData.substring(qStartIndex, qEndIndex);
+            const endOfFormatted = questionHtml.indexOf('</p>');
+            if (endOfFormatted !== -1) {
+              questionHtml = questionHtml.substring(endOfFormatted + 4).trim();
+            }
+            
+            if (questionHtml) {
+              extractedContent = questionHtml;
+            }
+          }
+          
+          // Extract solution/algorithm
+          const algoStartMarkers = ['<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>'];
+          let algoStartIndex = -1;
+          for (const marker of algoStartMarkers) {
+            const idx = solData.indexOf(marker);
+            if (idx !== -1 && (algoStartIndex === -1 || idx < algoStartIndex)) {
+              algoStartIndex = idx;
+            }
+          }
+          
+          if (algoStartIndex !== -1) {
+            let algoEndIndex = solData.length;
+            const codeMarkers = ['<h1 id="code">', '<h1>Code</h1>', '<h2 id="code">', '<h2>Code</h2>'];
+            for (const marker of codeMarkers) {
+              const idx = solData.indexOf(marker, algoStartIndex);
+              if (idx !== -1 && idx < algoEndIndex) {
+                algoEndIndex = idx;
+              }
+            }
+            
+            let algoHtml = solData.substring(algoStartIndex, algoEndIndex).trim();
+            if (algoHtml) {
+              premiumSolution.content = algoHtml;
+            }
+          }
+        }
+      } catch (err) {
+        // ignore errors and fallback to the original extractedContent
+      }
+    }
+
+    return { content: extractedContent, companyTags, premiumSolution };
   } catch (err) {
     return { content: null, companyTags: [] };
   }
