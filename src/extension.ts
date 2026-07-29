@@ -139,12 +139,11 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 return;
               }
-              if (daily.question.isPaidOnly && !daily.question.content) {
-                const premiumContent = await fetchPremiumContent(daily.question.questionFrontendId);
-                if (premiumContent) {
-                  daily.question.content = premiumContent;
-                }
+              const caData = await fetchLeetcodeCaData(daily.question.questionFrontendId);
+              if (daily.question.isPaidOnly && !daily.question.content && caData.content) {
+                daily.question.content = caData.content;
               }
+              (daily.question as any).companyTags = caData.companyTags;
               ProblemPanel.createOrShow(
                 context.extensionUri,
                 daily.question,
@@ -220,12 +219,11 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 return;
               }
-              if (problem.isPaidOnly && !problem.content) {
-                const premiumContent = await fetchPremiumContent(problem.questionFrontendId);
-                if (premiumContent) {
-                  problem.content = premiumContent;
-                }
+              const caData = await fetchLeetcodeCaData(problem.questionFrontendId);
+              if (problem.isPaidOnly && !problem.content && caData.content) {
+                problem.content = caData.content;
               }
+              (problem as any).companyTags = caData.companyTags;
               ProblemPanel.createOrShow(context.extensionUri, problem);
             } catch (err) {
               vscode.window.showErrorMessage(
@@ -920,24 +918,43 @@ function formatError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
 }
 
-async function fetchPremiumContent(frontendId: string): Promise<string | null> {
+async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: string | null; companyTags: string[] }> {
   try {
     const url = `https://leetcode.ca/all/${frontendId}.html`;
     const res = await fetch(url);
-    if (!res.ok) return null;
+    if (!res.ok) return { content: null, companyTags: [] };
     const data = await res.text();
+    
+    let extractedContent: string | null = null;
     const startIndex = data.indexOf('<div class="markdown-body div-width"');
-    if (startIndex === -1) return null;
-    const endIndex = data.indexOf('<h3>Difficulty:</h3>', startIndex);
-    if (endIndex !== -1) {
-      const content = data.substring(startIndex, endIndex);
-      const lastDiv = content.lastIndexOf('<div');
-      if (lastDiv !== -1) {
-        return content.substring(0, lastDiv).trim() + '</div>';
+    if (startIndex !== -1) {
+      const endIndex = data.indexOf('<h3>Difficulty:</h3>', startIndex);
+      if (endIndex !== -1) {
+        const content = data.substring(startIndex, endIndex);
+        const lastDiv = content.lastIndexOf('<div');
+        if (lastDiv !== -1) {
+          extractedContent = content.substring(0, lastDiv).trim() + '</div>';
+        }
       }
     }
-    return null;
+    
+    const companyTags: string[] = [];
+    const companyStartIndex = data.indexOf('<h3>Company:</h3>');
+    if (companyStartIndex !== -1) {
+      const companyEndIndex = data.indexOf('</div>', companyStartIndex);
+      if (companyEndIndex !== -1) {
+        const companySection = data.substring(companyStartIndex, companyEndIndex);
+        const regex = /<a[^>]*>(.*?)<\/a>/g;
+        let match;
+        while ((match = regex.exec(companySection)) !== null) {
+          companyTags.push(match[1].trim());
+        }
+      }
+    }
+    
+    return { content: extractedContent, companyTags };
   } catch (err) {
-    return null;
+    return { content: null, companyTags: [] };
   }
 }
+
