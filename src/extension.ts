@@ -985,12 +985,17 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
           const solData = await solRes.text();
           
           // Extract question
-          const startMarker = '<p>Formatted question description:';
-          const qStartIndex = solData.indexOf(startMarker);
+          let qStartIndex = solData.indexOf('<h2 id="description">');
+          if (qStartIndex === -1) qStartIndex = solData.indexOf('<h2>Description</h2>');
+          if (qStartIndex === -1) qStartIndex = solData.indexOf('<h1 id="description">');
+          if (qStartIndex === -1) qStartIndex = solData.indexOf('<h1>Description</h1>');
+          if (qStartIndex === -1) qStartIndex = solData.indexOf('<p>Formatted question description:');
+
           if (qStartIndex !== -1) {
             let qEndIndex = solData.length;
             const endMarkers = [
               '<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>',
+              '<h1 id="solution">', '<h1>Solution</h1>', '<h2 id="solution">', '<h2>Solution</h2>',
               '<h1 id="code">', '<h2 id="code">', '<h1>Code</h1>', '<h2>Code</h2>'
             ];
             for (const marker of endMarkers) {
@@ -1002,7 +1007,7 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
             
             let questionHtml = solData.substring(qStartIndex, qEndIndex);
             const endOfFormatted = questionHtml.indexOf('</p>');
-            if (endOfFormatted !== -1) {
+            if (questionHtml.startsWith('<p>Formatted') && endOfFormatted !== -1) {
               questionHtml = questionHtml.substring(endOfFormatted + 4).trim();
             }
             
@@ -1012,7 +1017,10 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
           }
           
           // Extract solution/algorithm
-          const algoStartMarkers = ['<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>'];
+          const algoStartMarkers = [
+            '<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>',
+            '<h1 id="solution">', '<h1>Solution</h1>', '<h2 id="solution">', '<h2>Solution</h2>'
+          ];
           let algoStartIndex = -1;
           for (const marker of algoStartMarkers) {
             const idx = solData.indexOf(marker);
@@ -1023,7 +1031,11 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
           
           if (algoStartIndex !== -1) {
             let algoEndIndex = solData.length;
-            const codeMarkers = ['<h1 id="code">', '<h1>Code</h1>', '<h2 id="code">', '<h2>Code</h2>'];
+            const codeMarkers = [
+              '<ul class="uk-tab"',
+              '<h1 id="code">', '<h1>Code</h1>', '<h2 id="code">', '<h2>Code</h2>',
+              '<h1 id="all-problems">', '<h1>All Problems</h1>'
+            ];
             for (const marker of codeMarkers) {
               const idx = solData.indexOf(marker, algoStartIndex);
               if (idx !== -1 && idx < algoEndIndex) {
