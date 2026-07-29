@@ -121,6 +121,15 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      "leetvscode.refreshDailyQuestions",
+      () => {
+        dailyQuestionProvider.refresh();
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       "leetvscode.showDailyChallenge",
       async () => {
         const lc = await sessionManager.getLeetCodeClient();
@@ -187,7 +196,7 @@ export function activate(context: vscode.ExtensionContext) {
           const picked = await vscode.window.showQuickPick(
             problems.map((p) => ({
               label: `${p.questionFrontendId}. ${p.title}`,
-              description: p.titleSlug,
+              description: p.difficulty,
               slug: p.titleSlug,
               detail: p.topicTags?.map(t => t.name).join(", ")
             })),
