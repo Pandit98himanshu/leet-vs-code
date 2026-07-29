@@ -74,6 +74,11 @@
     },
     "commands": [
       {
+        "command": "leetvscode.refreshDailyQuestions",
+        "title": "Refresh Daily Questions",
+        "icon": "$(refresh)"
+      },
+      {
         "command": "leetvscode.showDailyChallenge",
         "title": "Show Daily Challenge",
         "icon": "$(flame)"
@@ -161,6 +166,11 @@
           "command": "leetvscode.clearSession",
           "when": "view == leetvscodeProblems && leetvscode:hasSession",
           "group": "navigation@4"
+        },
+        {
+          "command": "leetvscode.refreshDailyQuestions",
+          "when": "view == leetvscodeDailyQuestions",
+          "group": "navigation@0"
         },
         {
           "command": "leetvscode.prevMonthDaily",
