@@ -60,8 +60,7 @@
         {
           "id": "leetvscodeSubmissions",
           "name": "My Submissions",
-          "icon": "$(history)",
-          "visibility": "collapsed"
+          "icon": "$(history)"
         }
       ],
       "leetvscodePanel": [
