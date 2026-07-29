@@ -996,6 +996,7 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
             const endMarkers = [
               '<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>',
               '<h1 id="solution">', '<h1>Solution</h1>', '<h2 id="solution">', '<h2>Solution</h2>',
+              '<h1 id="solutions">', '<h1>Solutions</h1>', '<h2 id="solutions">', '<h2>Solutions</h2>',
               '<h1 id="code">', '<h2 id="code">', '<h1>Code</h1>', '<h2>Code</h2>'
             ];
             for (const marker of endMarkers) {
@@ -1019,7 +1020,8 @@ async function fetchLeetcodeCaData(frontendId: string): Promise<{ content: strin
           // Extract solution/algorithm
           const algoStartMarkers = [
             '<h1 id="algorithm">', '<h1>Algorithm</h1>', '<h2 id="algorithm">', '<h2>Algorithm</h2>',
-            '<h1 id="solution">', '<h1>Solution</h1>', '<h2 id="solution">', '<h2>Solution</h2>'
+            '<h1 id="solution">', '<h1>Solution</h1>', '<h2 id="solution">', '<h2>Solution</h2>',
+            '<h1 id="solutions">', '<h1>Solutions</h1>', '<h2 id="solutions">', '<h2>Solutions</h2>'
           ];
           let algoStartIndex = -1;
           for (const marker of algoStartMarkers) {
