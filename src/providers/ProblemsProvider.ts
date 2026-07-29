@@ -109,7 +109,7 @@ export class ProblemsProvider
         },
         vscode.TreeItemCollapsibleState.None,
         this.getProblemStatusIcon(question.status, question.isPaidOnly),
-        tags,
+        question.difficulty,
         difficulty,
         question
       );

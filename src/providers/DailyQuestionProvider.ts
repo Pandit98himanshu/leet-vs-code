@@ -188,7 +188,7 @@ export class DailyQuestionProvider implements vscode.TreeDataProvider<ProblemIte
                 },
                 vscode.TreeItemCollapsibleState.None,
                 this.getProblemStatusIcon(q.status, q.isPaidOnly),
-                tags,
+                q.difficulty,
                 q.difficulty as any,
                 q
               );
