@@ -139,6 +139,12 @@ export function activate(context: vscode.ExtensionContext) {
                 );
                 return;
               }
+              if (daily.question.isPaidOnly && !daily.question.content) {
+                const premiumContent = await fetchPremiumContent(daily.question.questionFrontendId);
+                if (premiumContent) {
+                  daily.question.content = premiumContent;
+                }
+              }
               ProblemPanel.createOrShow(
                 context.extensionUri,
                 daily.question,
@@ -213,6 +219,12 @@ export function activate(context: vscode.ExtensionContext) {
                   `Problem not found.`
                 );
                 return;
+              }
+              if (problem.isPaidOnly && !problem.content) {
+                const premiumContent = await fetchPremiumContent(problem.questionFrontendId);
+                if (premiumContent) {
+                  problem.content = premiumContent;
+                }
               }
               ProblemPanel.createOrShow(context.extensionUri, problem);
             } catch (err) {
@@ -906,4 +918,26 @@ function toExtension(langSlug: string): string {
 
 function formatError(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
+}
+
+async function fetchPremiumContent(frontendId: string): Promise<string | null> {
+  try {
+    const url = `https://leetcode.ca/all/${frontendId}.html`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.text();
+    const startIndex = data.indexOf('<div class="markdown-body div-width"');
+    if (startIndex === -1) return null;
+    const endIndex = data.indexOf('<h3>Difficulty:</h3>', startIndex);
+    if (endIndex !== -1) {
+      const content = data.substring(startIndex, endIndex);
+      const lastDiv = content.lastIndexOf('<div');
+      if (lastDiv !== -1) {
+        return content.substring(0, lastDiv).trim() + '</div>';
+      }
+    }
+    return null;
+  } catch (err) {
+    return null;
+  }
 }
