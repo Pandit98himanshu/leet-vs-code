@@ -40,7 +40,7 @@
       "panel": [
         {
           "id": "leetvscodePanel",
-          "title": "LeetCode Test Results",
+          "title": "LeetCode Results",
           "icon": "$(beaker)"
         }
       ]
