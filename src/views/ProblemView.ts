@@ -20,6 +20,7 @@ export interface Problem {
   solution?: any;
   status?: any;
   note: string | null;
+  companyTags?: string[];
 }
 
 export function getProblemHtml(
@@ -205,6 +206,15 @@ export function getProblemHtml(
       ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
     </div>
   </details>
+
+  ${problem.companyTags && problem.companyTags.length > 0 ? `
+  <details class="hint">
+    <summary>Companies</summary>
+    <div class="tags" style="margin-top: 0.5em;">
+      ${problem.companyTags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
+    </div>
+  </details>
+  ` : ""}
 
   <details class="hint">
     <summary>Similar Questions</summary>
