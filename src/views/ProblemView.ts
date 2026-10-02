@@ -209,7 +209,7 @@ export function getProblemHtml(
     <select id="langSelect">${snippetOptions}</select>
     <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
     <button class="btn" onclick="openSolution()">Open in Editor</button>
-    <button class="btn btn-secondary" onclick="submitSolution()">Submit Active File</button>
+    <button class="btn btn-secondary" onclick="viewSubmissions()">Submissions</button>
     <span class="copy-notice" id="copyNotice">Copied!</span>
     ` : ''}
   </div>
@@ -242,8 +242,8 @@ export function getProblemHtml(
       vscode.postMessage({ command: 'openSolution', problem, snippetIndex });
     }
 
-    function submitSolution() {
-      vscode.postMessage({ command: 'submitSolution' });
+    function viewSubmissions() {
+      vscode.postMessage({ command: 'viewSubmissions', problem });
     }
   </script>
 </body>

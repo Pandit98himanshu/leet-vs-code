@@ -391,6 +391,74 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
+      "leetvscode.viewSubmissions",
+      async (problem?: any) => {
+        if (!problem || !problem.titleSlug) {
+          vscode.window.showErrorMessage("No problem context provided for submissions.");
+          return;
+        }
+
+        if (!(await sessionManager.hasSession())) {
+          vscode.window.showWarningMessage("You need to set your LeetCode session before viewing submissions.");
+          return;
+        }
+
+        const lc = await sessionManager.getLeetCodeClient();
+
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: `Fetching submissions for "${problem.title}"...`,
+            cancellable: false,
+          },
+          async () => {
+            try {
+              const subs = await lc.submissions({ limit: 20, slug: problem.titleSlug });
+
+              if (!subs || subs.length === 0) {
+                vscode.window.showInformationMessage(`No submissions found for "${problem.title}".`);
+                return;
+              }
+
+              const items = subs.map((s: any) => {
+                const date = new Date(s.timestamp).toLocaleString();
+                const icon = s.statusDisplay === "Accepted" ? "$(check)" : "$(error)";
+                return {
+                  label: `${icon} ${s.statusDisplay}`,
+                  description: `${s.lang} - ${date}`,
+                  detail: `Runtime: ${s.runtime}ms, Memory: ${s.memory}MB`,
+                  submission: s
+                };
+              });
+
+              const selected = await vscode.window.showQuickPick(items, {
+                placeHolder: `Select a submission for "${problem.title}" to view`
+              });
+
+              if (selected) {
+                const details = await lc.submission(selected.submission.id);
+                if (details && details.code) {
+                  const doc = await vscode.workspace.openTextDocument({
+                    language: selected.submission.lang,
+                    content: details.code
+                  });
+                  await vscode.window.showTextDocument(doc, { preview: true });
+                } else {
+                  vscode.window.showErrorMessage("Could not load submission code.");
+                }
+              }
+
+            } catch (err) {
+              vscode.window.showErrorMessage(`Failed to fetch submissions: ${err}`);
+            }
+          }
+        );
+      }
+    )
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
       "leetvscode.submitSolution",
       async () => {
         if (!(await sessionManager.hasSession())) {

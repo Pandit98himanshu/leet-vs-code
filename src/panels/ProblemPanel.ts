@@ -58,8 +58,8 @@ export class ProblemPanel {
           );
         }
 
-        if (message?.command === "submitSolution") {
-          await vscode.commands.executeCommand("leetvscode.submitSolution");
+        if (message?.command === "viewSubmissions") {
+          await vscode.commands.executeCommand("leetvscode.viewSubmissions", message.problem);
         }
       },
       null,
