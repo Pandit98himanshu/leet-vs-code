@@ -1,15 +1,11 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "main": "./dist/extension.js",
-  "keywords": [
-    "leetcode",
-    "vscode"
-  ],
   "author": "pandithimanshu",
-  "publisher": "pandithimanshu",
-  "license": "ISC",
+  "publisher": "leetvscode",
+  "license": "MIT",
   "engines": {
     "vscode": "^1.107.0"
   },
@@ -17,6 +13,19 @@
     "type": "git",
     "url": "https://github.com/pandithimanshu/leet-vs-code.git"
   },
+  "homepage": "https://github.com/pandithimanshu/leet-vs-code#readme",
+  "bugs": {
+    "url": "https://github.com/pandithimanshu/leet-vs-code/isues"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "coding",
+    "dsa",
+    "practicing",
+    "faang"
+  ],
   "activationEvents": [
     "onStartupFinished",
     "onView:leetvscodeProblems",

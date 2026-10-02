@@ -3,3 +3,5 @@ src/**
 scratch/**
 tsconfig.json
 .gitignore
+**/*.map
+**/*.ts
