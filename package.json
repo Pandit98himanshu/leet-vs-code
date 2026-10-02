@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -12,6 +12,10 @@
   "license": "ISC",
   "engines": {
     "vscode": "^1.107.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pandithimanshu/leet-vs-code.git"
   },
   "activationEvents": [
     "onStartupFinished",
