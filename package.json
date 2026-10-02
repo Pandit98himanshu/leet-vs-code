@@ -5,6 +5,7 @@
   "main": "./dist/extension.js",
   "author": "pandit98himanshu",
   "publisher": "leetcode-md",
+  "icon": "media/leetcode.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.107.0"
@@ -285,7 +286,7 @@
   "scripts": {
     "build": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --minify",
     "watch": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --platform=node --format=cjs --watch",
-    "package": "vsce package --no-dependencies --allow-missing-repository"
+    "package": "vsce package --no-dependencies"
   },
   "dependencies": {
     "leetcode-query": "^2.0.1",
