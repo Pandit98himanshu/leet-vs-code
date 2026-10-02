@@ -1,9 +1,9 @@
 {
-  "name": "leetvscode",
-  "displayName": "Leet-VS-Code",
+  "name": "minimal-leetcode",
+  "displayName": "Minimal LeetCode",
   "version": "1.7.5",
   "main": "./dist/extension.js",
-  "author": "pandithimanshu",
+  "author": "pandit98himanshu",
   "publisher": "leetvscode",
   "license": "MIT",
   "engines": {
@@ -15,7 +15,7 @@
   },
   "homepage": "https://github.com/pandithimanshu/leet-vs-code#readme",
   "bugs": {
-    "url": "https://github.com/pandithimanshu/leet-vs-code/isues"
+    "url": "https://github.com/pandithimanshu/leet-vs-code/issues"
   },
   "categories": [
     "Other"
