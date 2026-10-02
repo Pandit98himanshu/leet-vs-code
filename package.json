@@ -1,21 +1,21 @@
 {
-  "name": "minimal-leetcode",
-  "displayName": "Minimal LeetCode",
+  "name": "leetcode-md",
+  "displayName": "LeetCode.md",
   "version": "1.7.5",
   "main": "./dist/extension.js",
   "author": "pandit98himanshu",
-  "publisher": "leetvscode",
+  "publisher": "leetcode-md",
   "license": "MIT",
   "engines": {
     "vscode": "^1.107.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pandithimanshu/leet-vs-code.git"
+    "url": "https://github.com/Pandit98himanshu/leetcode.md.git"
   },
-  "homepage": "https://github.com/pandithimanshu/leet-vs-code#readme",
+  "homepage": "https://github.com/Pandit98himanshu/leetcode.md#readme",
   "bugs": {
-    "url": "https://github.com/pandithimanshu/leet-vs-code/issues"
+    "url": "https://github.com/Pandit98himanshu/leetcode.md/issues"
   },
   "categories": [
     "Other"
@@ -28,57 +28,57 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onView:leetvscodeProblems",
-    "onView:leetvscodeSubmissions",
-    "onCommand:leetvscode.showDailyChallenge",
-    "onCommand:leetvscode.searchProblem",
-    "onCommand:leetvscode.viewAllProblems",
-    "onCommand:leetvscode.showUserProfile",
-    "onCommand:leetvscode.openSolution",
-    "onCommand:leetvscode.submitSolution",
-    "onCommand:leetvscode.setSession",
-    "onCommand:leetvscode.clearSession",
-    "onCommand:leetvscode.showMySubmissions"
+    "onView:leetcode-mdProblems",
+    "onView:leetcode-mdSubmissions",
+    "onCommand:leetcode-md.showDailyChallenge",
+    "onCommand:leetcode-md.searchProblem",
+    "onCommand:leetcode-md.viewAllProblems",
+    "onCommand:leetcode-md.showUserProfile",
+    "onCommand:leetcode-md.openSolution",
+    "onCommand:leetcode-md.submitSolution",
+    "onCommand:leetcode-md.setSession",
+    "onCommand:leetcode-md.clearSession",
+    "onCommand:leetcode-md.showMySubmissions"
   ],
   "description": "Browse LeetCode problems, view daily challenges, and look up user profiles directly in VS Code.",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "leetvscode",
+          "id": "leetcode-md",
           "title": "LeetCode",
           "icon": "media/leetcode.svg"
         }
       ],
       "panel": [
         {
-          "id": "leetvscodePanel",
+          "id": "leetcode-mdPanel",
           "title": "LeetCode Results",
           "icon": "$(beaker)"
         }
       ]
     },
     "views": {
-      "leetvscode": [
+      "leetcode-md": [
         {
-          "id": "leetvscodeProblems",
+          "id": "leetcode-mdProblems",
           "name": "All Problems",
           "icon": "$(list-unordered)"
         },
         {
-          "id": "leetvscodeDailyQuestions",
+          "id": "leetcode-mdDailyQuestions",
           "name": "Daily Questions",
           "icon": "$(calendar)"
         },
         {
-          "id": "leetvscodeSubmissions",
+          "id": "leetcode-mdSubmissions",
           "name": "My Submissions",
           "icon": "$(history)"
         }
       ],
-      "leetvscodePanel": [
+      "leetcode-mdPanel": [
         {
-          "id": "leetvscodeTestResultsView",
+          "id": "leetcode-mdTestResultsView",
           "name": "Test Results",
           "type": "webview"
         }
@@ -86,127 +86,127 @@
     },
     "commands": [
       {
-        "command": "leetvscode.refreshDailyQuestions",
+        "command": "leetcode-md.refreshDailyQuestions",
         "title": "Refresh Daily Questions",
         "icon": "$(refresh)"
       },
       {
-        "command": "leetvscode.showDailyChallenge",
+        "command": "leetcode-md.showDailyChallenge",
         "title": "Show Daily Challenge",
         "icon": "$(flame)"
       },
       {
-        "command": "leetvscode.searchProblem",
+        "command": "leetcode-md.searchProblem",
         "title": "Search Problem",
         "icon": "$(search)"
       },
       {
-        "command": "leetvscode.viewAllProblems",
+        "command": "leetcode-md.viewAllProblems",
         "title": "View All Problems"
       },
       {
-        "command": "leetvscode.showUserProfile",
+        "command": "leetcode-md.showUserProfile",
         "title": "Show User Profile",
         "icon": "$(account)"
       },
       {
-        "command": "leetvscode.openSolution",
+        "command": "leetcode-md.openSolution",
         "title": "Open Solution File",
         "icon": "$(file-code)"
       },
       {
-        "command": "leetvscode.submitSolution",
+        "command": "leetcode-md.submitSolution",
         "title": "Submit Solution",
         "icon": "$(cloud-upload)"
       },
       {
-        "command": "leetvscode.testSolution",
+        "command": "leetcode-md.testSolution",
         "title": "Test Solution",
         "icon": "$(play)"
       },
       {
-        "command": "leetvscode.setSession",
+        "command": "leetcode-md.setSession",
         "title": "Set Session Cookie",
         "icon": "$(key)"
       },
       {
-        "command": "leetvscode.clearSession",
+        "command": "leetcode-md.clearSession",
         "title": "Clear Session Cookie",
         "icon": "$(sign-out)"
       },
       {
-        "command": "leetvscode.showMySubmissions",
+        "command": "leetcode-md.showMySubmissions",
         "title": "Show my recent Submissions",
         "icon": "$(history)"
       },
       {
-        "command": "leetvscode.clearTestResults",
+        "command": "leetcode-md.clearTestResults",
         "title": "Clear Test Results",
         "icon": "$(clear-all)"
       },
       {
-        "command": "leetvscode.prevMonthDaily",
+        "command": "leetcode-md.prevMonthDaily",
         "title": "Previous Month",
         "icon": "$(arrow-left)",
-        "enablement": "leetvscode:hasPrevMonth"
+        "enablement": "leetcode-md:hasPrevMonth"
       },
       {
-        "command": "leetvscode.nextMonthDaily",
+        "command": "leetcode-md.nextMonthDaily",
         "title": "Next Month",
         "icon": "$(arrow-right)",
-        "enablement": "leetvscode:hasNextMonth"
+        "enablement": "leetcode-md:hasNextMonth"
       }
     ],
     "menus": {
       "view/title": [
         {
-          "command": "leetvscode.searchProblem",
-          "when": "view == leetvscodeProblems",
+          "command": "leetcode-md.searchProblem",
+          "when": "view == leetcode-mdProblems",
           "group": "navigation@2"
         },
         {
-          "command": "leetvscode.showUserProfile",
-          "when": "view == leetvscodeProblems",
+          "command": "leetcode-md.showUserProfile",
+          "when": "view == leetcode-mdProblems",
           "group": "navigation@3"
         },
         {
-          "command": "leetvscode.setSession",
-          "when": "view == leetvscodeProblems && !leetvscode:hasSession",
+          "command": "leetcode-md.setSession",
+          "when": "view == leetcode-mdProblems && !leetcode-md:hasSession",
           "group": "navigation@4"
         },
         {
-          "command": "leetvscode.clearSession",
-          "when": "view == leetvscodeProblems && leetvscode:hasSession",
+          "command": "leetcode-md.clearSession",
+          "when": "view == leetcode-mdProblems && leetcode-md:hasSession",
           "group": "navigation@4"
         },
         {
-          "command": "leetvscode.refreshDailyQuestions",
-          "when": "view == leetvscodeDailyQuestions",
+          "command": "leetcode-md.refreshDailyQuestions",
+          "when": "view == leetcode-mdDailyQuestions",
           "group": "navigation@0"
         },
         {
-          "command": "leetvscode.prevMonthDaily",
-          "when": "view == leetvscodeDailyQuestions",
+          "command": "leetcode-md.prevMonthDaily",
+          "when": "view == leetcode-mdDailyQuestions",
           "group": "navigation@1"
         },
         {
-          "command": "leetvscode.nextMonthDaily",
-          "when": "view == leetvscodeDailyQuestions",
+          "command": "leetcode-md.nextMonthDaily",
+          "when": "view == leetcode-mdDailyQuestions",
           "group": "navigation@2"
         },
         {
-          "command": "leetvscode.showDailyChallenge",
-          "when": "view == leetvscodeDailyQuestions",
+          "command": "leetcode-md.showDailyChallenge",
+          "when": "view == leetcode-mdDailyQuestions",
           "group": "navigation@3"
         },
         {
-          "command": "leetvscode.showMySubmissions",
-          "when": "view == leetvscodeSubmissions && leetvscode:hasSession",
+          "command": "leetcode-md.showMySubmissions",
+          "when": "view == leetcode-mdSubmissions && leetcode-md:hasSession",
           "group": "navigation@0"
         },
         {
-          "command": "leetvscode.clearTestResults",
-          "when": "view == leetvscodeTestResultsView",
+          "command": "leetcode-md.clearTestResults",
+          "when": "view == leetcode-mdTestResultsView",
           "group": "navigation@0"
         }
       ]
@@ -214,7 +214,7 @@
     "configuration": {
       "title": "Leet-VS-Code",
       "properties": {
-        "leetvscode.defaultDifficulty": {
+        "leetcode-md.defaultDifficulty": {
           "type": "string",
           "default": "All",
           "enum": [
@@ -225,12 +225,12 @@
           ],
           "description": "Default difficulty filter for prolem browsing"
         },
-        "leetvscode.rootDir": {
+        "leetcode-md.rootDir": {
           "type": "string",
           "default": "",
-          "description": "Root directory for all LeetVSCode storage (solutions, cache, etc.). Leave empty to use the default (~/.leetvscode)."
+          "description": "Root directory for all LeetVSCode storage (solutions, cache, etc.). Leave empty to use the default (~/.leetcode-md)."
         },
-        "leetvscode.defaultLanguage": {
+        "leetcode-md.defaultLanguage": {
           "type": "string",
           "default": "",
           "enum": [
@@ -288,13 +288,11 @@
     "package": "vsce package --no-dependencies --allow-missing-repository"
   },
   "dependencies": {
-    "leetcode": "^2.0.0",
     "leetcode-query": "^2.0.1",
     "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
-    "@types/react": "^19.2.17",
     "@types/turndown": "^5.0.6",
     "@types/vscode": "^1.107.0",
     "@vscode/vsce": "^3.9.2",

@@ -45,21 +45,21 @@ export class ProblemPanel {
       async (message) => {
         if (message?.command === "searchProblem" && message.slug) {
           await vscode.commands.executeCommand(
-            "leetvscode.searchProblem",
+            "leetcode-md.searchProblem",
             String(message.slug)
           );
         }
 
         if (message?.command === "openSolution") {
           await vscode.commands.executeCommand(
-            "leetvscode.openSolution",
+            "leetcode-md.openSolution",
             message.problem,
             Number(message.snippetIndex ?? 0)
           );
         }
 
         if (message?.command === "viewSubmissions") {
-          await vscode.commands.executeCommand("leetvscode.viewSubmissions", message.problem);
+          await vscode.commands.executeCommand("leetcode-md.viewSubmissions", message.problem);
         }
       },
       null,
@@ -74,7 +74,7 @@ export class ProblemPanel {
 
   private _getHtml(problem: Problem, dailyDate?: string): string {
     const defaultLang = vscode.workspace
-      .getConfiguration("leetvscode")
+      .getConfiguration("leetcode-md")
       .get<string>("defaultLanguage", "");
 
     let styleUri = "";

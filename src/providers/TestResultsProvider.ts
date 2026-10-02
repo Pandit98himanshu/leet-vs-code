@@ -4,7 +4,7 @@ import { SubmitResult } from "../submission/SubmitService";
 import { getTestResultHtml, getSubmitResultHtml, getLoadingHtml } from "../views/TestResultsView";
 
 export class TestResultsProvider implements vscode.WebviewViewProvider {
-  public static readonly viewType = "leetvscodeTestResultsView";
+  public static readonly viewType = "leetcode-mdTestResultsView";
   private _view?: vscode.WebviewView;
   private _lastState?: {
     type: "test" | "submit" | "loading";

@@ -1,4 +1,15 @@
-# <img src="https://upload.wikimedia.org/wikipedia/commons/1/19/LeetCode_logo_black.png" width="32" height="32" alt="LeetCode Logo" style="vertical-align: middle; margin-right: 8px;" /> Leet VS Code
+<div align="center">
+
+```text
+██╗     ███████╗███████╗████████╗ ██████╗ ██████╗ ██████╗ ███████╗   
+██║     ██╔════╝██╔════╝╚══██╔══╝██╔════╝██╔═══██╗██╔══██╗██╔════╝   
+██║     █████╗  █████╗     ██║   ██║     ██║   ██║██║  ██║█████╗     
+██║     ██╔══╝  ██╔══╝     ██║   ██║     ██║   ██║██║  ██║██╔══╝     
+███████╗███████╗███████╗   ██║   ╚██████╗╚██████╔╝██████╔╝███████╗   
+╚══════╝╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═════╝ ╚═════╝ ╚══════╝.md
+```
+
+</div>
 
 A lightweight, fully-featured LeetCode extension for VS Code that brings the complete competitive programming experience directly into your editor with a native, distraction-free aesthetic.
 
@@ -23,34 +34,28 @@ Once you set your LeetCode session in the extension, you can browse problems, op
 
 To use this extension, you need to authenticate by providing your `LEETCODE_SESSION` cookie. Here is how you can retrieve it from your preferred browser:
 
-<details>
-<summary>Google Chrome / Microsoft Edge</summary>
+## Google Chrome / Microsoft Edge
 
 1. Log into [LeetCode](https://leetcode.com).
 2. Right-click anywhere on the page and select **Inspect**.
 3. Navigate to the **Application** tab (you may need to click the `>>` arrows if it's hidden).
 4. In the left sidebar, expand **Cookies** and click on `https://leetcode.com`.
 5. Find the cookie named `LEETCODE_SESSION` and copy its `Value`.
-</details>
 
-<details>
-<summary>Mozilla Firefox</summary>
+## Mozilla Firefox
 
 1. Log into [LeetCode](https://leetcode.com).
 2. Right-click anywhere on the page and select **Inspect**.
 3. Navigate to the **Storage** tab.
 4. In the left sidebar, expand **Cookies** and click on `https://leetcode.com`.
 5. Find the cookie named `LEETCODE_SESSION` and copy its `Value`.
-</details>
 
-<details>
-<summary>Safari</summary>
+## Safari
 
 1. Log into [LeetCode](https://leetcode.com).
 2. Right-click anywhere on the page and select **Inspect Element** (ensure the "Show Develop menu in menu bar" setting is enabled in Safari's Advanced preferences).
 3. Navigate to the **Storage** tab.
 4. In the left sidebar, select **Cookies**.
 5. Find the cookie named `LEETCODE_SESSION` and copy its `Value`.
-</details>
 
 Once you have copied the cookie value, open the VS Code Command Palette (`Cmd+Shift+P` or `Ctrl+Shift+P`), search for **LeetCode: Set Session**, and paste the token to log in.

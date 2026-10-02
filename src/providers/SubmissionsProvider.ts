@@ -50,7 +50,7 @@ export class SubmissionsProvider
         new SubmissionItem(
           "Set session to view submissions",
           {
-            command: "leetvscode.setSession",
+            command: "leetcode-md.setSession",
             title: "Set Session",
           },
           vscode.TreeItemCollapsibleState.None,
@@ -72,7 +72,7 @@ export class SubmissionsProvider
           new SubmissionItem(
             "Session expired — please set a new session",
             {
-              command: "leetvscode.setSession",
+              command: "leetcode-md.setSession",
               title: "Set Session",
             },
             vscode.TreeItemCollapsibleState.None,
@@ -116,7 +116,7 @@ export class SubmissionsProvider
       const item = new SubmissionItem(
         label,
         {
-          command: "leetvscode.openSubmission",
+          command: "leetcode-md.openSubmission",
           title: "Open Submission",
           arguments: [s.id, s.titleSlug],
         },

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { LeetCode, Credential } from "leetcode-query";
 
-const SESSION_KEY = "leetvscode.session";
+const SESSION_KEY = "leetcode-md.session";
 
 export class SessionManager {
   private readonly _onDidChangeSession = new vscode.EventEmitter<void>();

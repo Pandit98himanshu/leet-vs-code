@@ -2,14 +2,14 @@ import * as path from "path";
 import * as os from "os";
 import * as vscode from "vscode";
 
-const DEFAULT_ROOT_DIR = path.join(os.homedir(), ".leetvscode");
+const DEFAULT_ROOT_DIR = path.join(os.homedir(), ".leetcode-md");
 
 /**
- * Returns the user-configured root directory, or ~/.leetvscode by default.
+ * Returns the user-configured root directory, or ~/.leetcode-md by default.
  */
 export function getRootDir(): string {
   const configured = vscode.workspace
-    .getConfiguration("leetvscode")
+    .getConfiguration("leetcode-md")
     .get<string>("rootDir", "");
   return configured || DEFAULT_ROOT_DIR;
 }

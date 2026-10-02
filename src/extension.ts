@@ -47,11 +47,11 @@ class LeetCodeLensProvider implements vscode.CodeLensProvider {
     return [
       new vscode.CodeLens(range, {
         title: "$(play) Test Solution",
-        command: "leetvscode.testSolution",
+        command: "leetcode-md.testSolution",
       }),
       new vscode.CodeLens(range, {
         title: "$(cloud-upload) Submit Solution",
-        command: "leetvscode.submitSolution",
+        command: "leetcode-md.submitSolution",
       })
     ];
   }
@@ -69,26 +69,26 @@ export function activate(context: vscode.ExtensionContext) {
 
   async function updateSessionContext(): Promise<void> {
     const hasSession = await sessionManager.hasSession();
-    vscode.commands.executeCommand("setContext", "leetvscode:hasSession", hasSession);
+    vscode.commands.executeCommand("setContext", "leetcode-md:hasSession", hasSession);
   }
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider(
-      "leetvscodeProblems",
+      "leetcode-mdProblems",
       problemsProvider
     )
   );
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider(
-      "leetvscodeSubmissions",
+      "leetcode-mdSubmissions",
       submissionsProvider
     )
   );
 
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider(
-      "leetvscodeDailyQuestions",
+      "leetcode-mdDailyQuestions",
       dailyQuestionProvider
     )
   );
@@ -121,7 +121,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.refreshDailyQuestions",
+      "leetcode-md.refreshDailyQuestions",
       () => {
         dailyQuestionProvider.refresh();
       }
@@ -130,7 +130,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.showDailyChallenge",
+      "leetcode-md.showDailyChallenge",
       async () => {
         const lc = await sessionManager.getLeetCodeClient();
         await vscode.window.withProgress(
@@ -172,7 +172,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.searchProblem",
+      "leetcode-md.searchProblem",
       async (slugArg?: unknown) => {
         const lc = await sessionManager.getLeetCodeClient();
 
@@ -249,16 +249,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.viewAllProblems",
+      "leetcode-md.viewAllProblems",
       async () => {
-        await vscode.commands.executeCommand("leetvscodeProblems.focus");
+        await vscode.commands.executeCommand("leetcode-mdProblems.focus");
       }
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.openSubmission",
+      "leetcode-md.openSubmission",
       async (submissionId: number, titleSlug: string) => {
         const lc = await sessionManager.getLeetCodeClient();
         await vscode.window.withProgress(
@@ -303,7 +303,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.showUserProfile",
+      "leetcode-md.showUserProfile",
       async () => {
         const username = await vscode.window.showInputBox({
           prompt: "Enter LeetCode username",
@@ -354,7 +354,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.openSolution",
+      "leetcode-md.openSolution",
       async (problemArg?: ProblemForEditor, snippetIndex = 0) => {
         const lc = await sessionManager.getLeetCodeClient();
         const problem = problemArg ?? (await pickProblem(lc));
@@ -391,7 +391,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.viewSubmissions",
+      "leetcode-md.viewSubmissions",
       async (problem?: any) => {
         if (!problem || !problem.titleSlug) {
           vscode.window.showErrorMessage("No problem context provided for submissions.");
@@ -459,7 +459,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.submitSolution",
+      "leetcode-md.submitSolution",
       async () => {
         if (!(await sessionManager.hasSession())) {
           const action = await vscode.window.showWarningMessage(
@@ -467,7 +467,7 @@ export function activate(context: vscode.ExtensionContext) {
             "Set Session"
           );
           if (action === "Set Session") {
-            await vscode.commands.executeCommand("leetvscode.setSession");
+            await vscode.commands.executeCommand("leetcode-md.setSession");
           }
           return;
         }
@@ -528,7 +528,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.testSolution",
+      "leetcode-md.testSolution",
       async () => {
         if (!(await sessionManager.hasSession())) {
           const action = await vscode.window.showWarningMessage(
@@ -536,7 +536,7 @@ export function activate(context: vscode.ExtensionContext) {
             "Set Session"
           );
           if (action === "Set Session") {
-            await vscode.commands.executeCommand("leetvscode.setSession");
+            await vscode.commands.executeCommand("leetcode-md.setSession");
           }
           return;
         }
@@ -628,7 +628,7 @@ export function activate(context: vscode.ExtensionContext) {
               });
 
               testResultsProvider.updateResult(result, { ...metadata, dataInput });
-              await vscode.commands.executeCommand("leetvscodeTestResultsView.focus");
+              await vscode.commands.executeCommand("leetcode-mdTestResultsView.focus");
             } catch (err) {
               vscode.window.showErrorMessage(
                 `Failed to test solution: ${formatError(err)}`
@@ -642,7 +642,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.setSession",
+      "leetcode-md.setSession",
       async () => {
         const session = await vscode.window.showInputBox({
           prompt:
@@ -666,7 +666,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.clearSession",
+      "leetcode-md.clearSession",
       async () => {
         await sessionManager.clearSession();
         updateSessionContext();
@@ -677,7 +677,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.showMySubmissions",
+      "leetcode-md.showMySubmissions",
       async () => {
         if (!(await sessionManager.hasSession())) {
           const action = await vscode.window.showWarningMessage(
@@ -686,21 +686,21 @@ export function activate(context: vscode.ExtensionContext) {
           );
           if (action === "Set Session") {
             await vscode.commands.executeCommand(
-              "leetvscode.setSession"
+              "leetcode-md.setSession"
             );
           }
           return;
         }
 
         submissionsProvider.refresh();
-        await vscode.commands.executeCommand("leetvscodeSubmissions.focus");
+        await vscode.commands.executeCommand("leetcode-mdSubmissions.focus");
       }
     )
   );
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.clearTestResults",
+      "leetcode-md.clearTestResults",
       () => {
         testResultsProvider.clear();
       }
@@ -709,7 +709,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.prevMonthDaily",
+      "leetcode-md.prevMonthDaily",
       () => {
         dailyQuestionProvider.prevMonth();
       }
@@ -718,7 +718,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   context.subscriptions.push(
     vscode.commands.registerCommand(
-      "leetvscode.nextMonthDaily",
+      "leetcode-md.nextMonthDaily",
       () => {
         dailyQuestionProvider.nextMonth();
       }
@@ -879,7 +879,7 @@ function showSubmissionResult(
   testResultsProvider: TestResultsProvider
 ): void {
   testResultsProvider.updateSubmitResult(result, metadata);
-  vscode.commands.executeCommand("leetvscodeTestResultsView.focus");
+  vscode.commands.executeCommand("leetcode-mdTestResultsView.focus");
 }
 
 function inferSlugFromFileName(fileName: string): string {

@@ -103,7 +103,7 @@ export class ProblemsProvider
       const item = new ProblemItem(
         label,
         {
-          command: "leetvscode.searchProblem",
+          command: "leetcode-md.searchProblem",
           title: "Open Problem",
           arguments: [question.titleSlug],
         },
@@ -127,7 +127,7 @@ export class ProblemsProvider
       return cached;
     }
 
-    // 2. Disk cache (~/.leetvscode/.cache/problems)
+    // 2. Disk cache (~/.leetcode-md/.cache/problems)
     const diskCached = this.diskCache.get(difficulty);
     if (diskCached) {
       this.problemCache.set(difficulty, diskCached);

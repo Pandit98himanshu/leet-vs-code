@@ -125,8 +125,8 @@ export class DailyQuestionProvider implements vscode.TreeDataProvider<ProblemIte
     this.dailyQuestions = [];
 
     // Update command enablement context based on pagination boundaries
-    vscode.commands.executeCommand("setContext", "leetvscode:hasPrevMonth", this.hasPrevMonth());
-    vscode.commands.executeCommand("setContext", "leetvscode:hasNextMonth", this.hasNextMonth());
+    vscode.commands.executeCommand("setContext", "leetcode-md:hasPrevMonth", this.hasPrevMonth());
+    vscode.commands.executeCommand("setContext", "leetcode-md:hasNextMonth", this.hasNextMonth());
 
     this._onDidChangeTreeData.fire();
 
@@ -182,7 +182,7 @@ export class DailyQuestionProvider implements vscode.TreeDataProvider<ProblemIte
               const item = new ProblemItem(
                 label,
                 {
-                  command: "leetvscode.searchProblem",
+                  command: "leetcode-md.searchProblem",
                   title: "Open Problem",
                   arguments: [q.titleSlug],
                 },
@@ -208,8 +208,8 @@ export class DailyQuestionProvider implements vscode.TreeDataProvider<ProblemIte
       this.isLoaded = true;
 
       // Re-evaluate context just in case
-      vscode.commands.executeCommand("setContext", "leetvscode:hasPrevMonth", this.hasPrevMonth());
-      vscode.commands.executeCommand("setContext", "leetvscode:hasNextMonth", this.hasNextMonth());
+      vscode.commands.executeCommand("setContext", "leetcode-md:hasPrevMonth", this.hasPrevMonth());
+      vscode.commands.executeCommand("setContext", "leetcode-md:hasNextMonth", this.hasNextMonth());
 
       this._onDidChangeTreeData.fire();
     }
