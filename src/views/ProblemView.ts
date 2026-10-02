@@ -34,6 +34,18 @@ function buildMarkdown(problem: Problem, dailyDate?: string): string {
       return '\n```\n' + content.trim() + '\n```\n';
     }
   });
+  turndown.addRule('sup', {
+    filter: 'sup',
+    replacement: function (content: string) {
+      return '^' + content;
+    }
+  });
+  turndown.addRule('sub', {
+    filter: 'sub',
+    replacement: function (content: string) {
+      return '_' + content;
+    }
+  });
 
   let acRate = "N/A";
   let totalAccepted = "N/A";
