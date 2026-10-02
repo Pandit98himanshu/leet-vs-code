@@ -251,5 +251,5 @@ export function getProblemHtml(
 }
 
 export function escapeScriptJson(json: string): string {
-  return json.replace(/</g, "\\\\u003c");
+  return json.replace(/</g, "\\u003c");
 }
