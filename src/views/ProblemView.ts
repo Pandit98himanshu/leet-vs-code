@@ -1,4 +1,5 @@
 import { escapeHtml } from "../utils/html";
+const TurndownService = require("turndown");
 
 export interface Problem {
   questionId: string;
@@ -24,44 +25,89 @@ export interface Problem {
   premiumSolution?: { title: string; link: string; content?: string };
 }
 
+function buildMarkdown(problem: Problem, dailyDate?: string): string {
+  const turndown = new TurndownService({ codeBlockStyle: 'fenced' });
+  turndown.escape = function (str: string) { return str; };
+  turndown.addRule('pre', {
+    filter: 'pre',
+    replacement: function (content: string) {
+      return '\n```\n' + content.trim() + '\n```\n';
+    }
+  });
+
+  let acRate = "N/A";
+  let totalAccepted = "N/A";
+  let totalSubmission = "N/A";
+
+  if (problem.stats) {
+    try {
+      const stats = JSON.parse(problem.stats);
+      acRate = stats.acRate ?? "N/A";
+      totalAccepted = stats.totalAccepted ?? "N/A";
+      totalSubmission = stats.totalSubmission ?? "N/A";
+    } catch (e) { }
+  }
+
+  let md = `# ${problem.questionFrontendId}. ${problem.title}\n\n`;
+  if (dailyDate) {
+    md += `**Daily Date:** ${dailyDate}\n\n`;
+  }
+  md += `**Difficulty:** ${problem.difficulty}\n`;
+  md += `**Likes:** ${problem.likes} | **Dislikes:** ${problem.dislikes}\n`;
+  md += `**Accepted:** ${totalAccepted} / ${totalSubmission} (${acRate})\n`;
+  if (problem.isPaidOnly) {
+    md += `**Status:** 🔒 Premium\n`;
+  }
+
+  md += `\n---\n\n`;
+  md += turndown.turndown(problem.content ?? "Content not available.");
+
+  if (problem.hints && problem.hints.length > 0) {
+    md += `\n\n---\n\n## Hints\n`;
+    problem.hints.forEach((hint: string, i: number) => {
+      md += `<details><summary>Hint ${i + 1}</summary>\n`;
+      md += turndown.turndown(hint) + '\n</details>\n';
+    });
+  }
+
+  if (problem.topicTags && problem.topicTags.length > 0) {
+    md += `\n\n---\n\n## Topics\n`;
+    md += problem.topicTags.map((t: any) => `\`${t.name}\``).join(' ');
+  }
+
+  let similarQuestions: any[] = [];
+  if (problem.similarQuestions) {
+    try {
+      similarQuestions = JSON.parse(problem.similarQuestions);
+    } catch (e) { }
+  }
+  if (similarQuestions.length > 0) {
+    md += `\n\n---\n\n## Similar Questions\n`;
+    similarQuestions.forEach(q => {
+      md += `- ${q.title} (${q.difficulty})\n`;
+    });
+  }
+
+  if (problem.companyTags && problem.companyTags.length > 0) {
+    md += `\n\n---\n\n## Companies\n`;
+    md += problem.companyTags.map((t: string) => `\`${t}\``).join(' ');
+  }
+
+  if (problem.note) {
+    md += `\n\n---\n\n## Note\n`;
+    md += turndown.turndown(problem.note);
+  }
+
+  return md;
+}
+
 export function getProblemHtml(
   problem: Problem,
   styleUri: string,
   dailyDate?: string,
   defaultLang: string = ""
 ): string {
-  const difficultyColor =
-    problem.difficulty === "Easy"
-      ? "#00b8a3"
-      : problem.difficulty === "Medium"
-        ? "#ffc01e"
-        : "#ff375f";
-
-  const statusColor =
-    problem.status === "ac"
-      ? "#00b8a3"
-      : problem.status === "notac"
-        ? "#ffc01e"
-        : "#ff375f";
-
-  // Parse stats JSON safely
-  let acRate = "N/A";
-  let totalAccepted = "N/A";
-  let totalSubmission = "N/A";
-
-  if (problem.stats) {
-    const stats = JSON.parse(problem.stats);
-    acRate = stats.acRate ?? "N/A";
-    totalAccepted = stats.totalAccepted ?? "N/A";
-    totalSubmission = stats.totalSubmission ?? "N/A";
-  }
-
-  // Parse similar questions safely
-  let similarQuestions: { title: string; titleSlug: string; difficulty: string }[] = [];
-  if (problem.similarQuestions) {
-    similarQuestions = JSON.parse(problem.similarQuestions);
-  }
-
+  const markdownText = buildMarkdown(problem, dailyDate);
   const snippets = problem.codeSnippets ?? [];
   const defaultIndex = defaultLang
     ? snippets.findIndex((s) => s.langSlug === defaultLang)
@@ -90,31 +136,38 @@ export function getProblemHtml(
     })
   );
 
-  // Hints
-  const hintsHtml = problem.hints?.length
-    ? problem.hints
-      .map(
-        (h, i) =>
-          `<details class="hint"><summary>Hint ${i + 1}</summary><p>${h}</p></details>`
-      )
-      .join("")
-    : '<p class="muted">No hints available.</p>';
+  let displayHtml = escapeHtml(markdownText);
+  displayHtml = displayHtml.replace(/&lt;details&gt;/g, '<details>');
+  displayHtml = displayHtml.replace(/&lt;\/details&gt;/g, '</details>');
+  displayHtml = displayHtml.replace(/&lt;summary&gt;/g, '<summary style="cursor: pointer; font-weight: bold;">');
+  displayHtml = displayHtml.replace(/&lt;\/summary&gt;/g, '</summary>');
 
-  // Similar questions
-  const similarHtml = similarQuestions.length
-    ? similarQuestions
-      .map(
-        (q) =>
-          `<span class="tag similar-tag" style="cursor:pointer; color: var(--${q.difficulty.toLowerCase()}); border-color: var(--${q.difficulty.toLowerCase()});" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)}</span>`
-      )
-      .join(" ")
-    : '<span class="muted">None</span>';
-  let statusText = "";
-  if (problem.status === "ac") {
-    statusText = "Solved";
-  } else if (problem.status === "notac") {
-    statusText = "Attempted";
+  const titleText = escapeHtml(`# ${problem.questionFrontendId}. ${problem.title}`);
+  const leetcodeUrl = `https://leetcode.com/problems/${problem.titleSlug}/`;
+  displayHtml = displayHtml.replace(titleText, `<a href="${leetcodeUrl}" target="_blank">${titleText}</a>`);
+
+  let similarQuestions: any[] = [];
+  if (problem.similarQuestions) {
+    try {
+      similarQuestions = JSON.parse(problem.similarQuestions);
+    } catch (e) { }
   }
+  if (similarQuestions.length > 0) {
+    similarQuestions.forEach(q => {
+      const qText = escapeHtml(`- ${q.title} (${q.difficulty})`);
+      const qUrl = `https://leetcode.com/problems/${q.titleSlug}/`;
+      displayHtml = displayHtml.replace(
+        qText,
+        `- <a href="javascript:void(0);" onclick="openProblem('${escapeHtml(q.titleSlug)}')">${escapeHtml(q.title)}</a> (${escapeHtml(q.difficulty)})`
+      );
+    });
+  }
+
+  displayHtml = displayHtml.replace(/!\[(.*?)\]\((.*?)\)/g, (match, alt, src) => {
+    const parts = src.split(' ');
+    const url = parts[0];
+    return `<img src="${url}" alt="${alt}" style="max-width: 25%; margin: 16px 0; display: block; border-radius: 4px;" />`;
+  });
 
   return /* html */ `<!DOCTYPE html>
 <html lang="en">
@@ -122,134 +175,42 @@ export function getProblemHtml(
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(problem.title)}</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="${styleUri}" />
   <style>
-    /* Specific styles for Problem Panel */
-    .difficulty { background: ${problem.difficulty === "Easy"
-      ? "#00b8a3"
-      : problem.difficulty === "Medium"
-        ? "#ffc01e"
-        : "#ff375f"
-    }22; color: ${problem.difficulty === "Easy"
-      ? "#00b8a3"
-      : problem.difficulty === "Medium"
-        ? "#ffc01e"
-        : "#ff375f"
-    }; border: 1px solid ${problem.difficulty === "Easy"
-      ? "#00b8a3"
-      : problem.difficulty === "Medium"
-        ? "#ffc01e"
-        : "#ff375f"
-    }55; }
-    .easy-text { color: var(--easy); border-color: var(--easy); }
-    .medium-text { color: var(--medium); border-color: var(--medium); }
-    .hard-text { color: var(--hard); border-color: var(--hard); }
+    .markdown-source {
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: var(--vscode-editor-font-size, 14px);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      background: var(--vscode-editor-background);
+      color: var(--vscode-editor-foreground);
+      padding: 16px;
+      border: 1px solid var(--vscode-widget-border);
+      border-radius: 4px;
+      line-height: 1.5;
+    }
   </style>
 </head>
-<body>
-  <h1 style="display: flex; align-items: center; justify-content: space-between;">
-    <span>
-      ${escapeHtml(problem.questionFrontendId)}. ${escapeHtml(problem.title)}
-      <a class="open-link" href="https://leetcode.com/problems/${escapeHtml(problem.titleSlug)}/" title="Open on LeetCode">↗</a>
-    </span>
-    ${dailyDate
-      ? `<span class="badge stat-badge" style="font-size: 0.6em;"><i class="fa-regular fa-calendar-alt"></i> ${escapeHtml(
-        dailyDate
-      )}</span>`
-      : ""
-    }
-    ${statusText ? `<span class="badge" style="font-size: 0.55em; color:${statusColor}">${statusText}</span>` : ""}
-  </h1>
-  
-  <div class="meta">
-    <span class="badge difficulty">${escapeHtml(problem.difficulty)}</span>
-    <span class="badge stat-badge"><i class="${problem.isLiked ? `fa-solid` : `fa-regular`} fa-thumbs-up" style="color: rgb(255, 255, 255);"></i> ${problem.likes.toLocaleString()}</span>
-    <span class="badge stat-badge"><i class="fa-regular fa-thumbs-down" style="color: rgb(255, 255, 255);"></i> ${problem.dislikes.toLocaleString()}</span>
-    <span class="badge stat-badge">Accepted: <strong>${totalAccepted}</strong>/${totalSubmission}</span>
-    <span class="badge stat-badge">Acceptance Rate: ${acRate}</span>
-    ${problem.isPaidOnly ? '<span class="badge" style="background:#ffd70022;color:#ffd700;border:1px solid #ffd70055">🔒 Premium</span>' : ""}
+<body class="vscode-body">
+  <div class="snippet-bar" style="margin-bottom: 16px;">
+    ${snippets.length > 0 ? `
+    <select id="langSelect">${snippetOptions}</select>
+    <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
+    <button class="btn" onclick="openSolution()">Open in Editor</button>
+    <button class="btn btn-secondary" onclick="submitSolution()">Submit Active File</button>
+    <span class="copy-notice" id="copyNotice">Copied!</span>
+    ` : ''}
   </div>
 
-  <hr class="divider" />
-
-  <div class="problem-content">
-    ${problem.content ?? "<p>Content not available.</p>"}
-  </div>
-
-  <hr class="divider" />
-
-  <h2>Hints</h2>
-  ${hintsHtml}
-
-  <hr class="divider" />
-
-  <h2>Code Snippets</h2>
-  ${(problem.codeSnippets ?? []).length > 0
-      ? `<div class="snippet-bar">
-           <select id="langSelect" onchange="updateSnippet()">${snippetOptions}</select>
-           <button class="btn btn-secondary" onclick="copySnippet()">Copy</button>
-           <button class="btn" onclick="openSolution()">Open in Editor</button>
-           <button class="btn btn-secondary" onclick="submitSolution()">Submit Active File</button>
-           <span class="copy-notice" id="copyNotice">Copied!</span>
-         </div>
-         <div class="snippet-code">
-           <pre><code id="snippetCode"></code></pre>
-         </div>`
-      : '<p class="muted">No code snippets available.</p>'
-    }
-
-  <hr class="divider" />
-
-  <details class="hint">
-    <summary>Topics</summary>
-    <div class="tags" style="margin-top: 0.5em;">
-      ${problem.topicTags.map((t) => `<span class="tag">${escapeHtml(t.name)}</span>`).join("")}
-    </div>
-  </details>
-
-  ${problem.companyTags && problem.companyTags.length > 0 ? `
-  <details class="hint">
-    <summary>Companies</summary>
-    <div class="tags" style="margin-top: 0.5em;">
-      ${problem.companyTags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join("")}
-    </div>
-  </details>
-  ` : ""}
-
-  <details class="hint">
-    <summary>Similar Questions</summary>
-    <div style="margin-top: 0.5em;">${similarHtml}</div>
-  </details>
-
-  ${problem.isPaidOnly && problem.premiumSolution ? `
-  <details class="hint">
-    <summary>Solution</summary>
-    <div style="margin-top: 0.5em;">
-      <a href="${escapeHtml(problem.premiumSolution.link)}" style="color: #0066cc; text-decoration: underline;" target="_blank">
-        ${escapeHtml(problem.premiumSolution.title)}
-      </a>
-      ${problem.premiumSolution.content ? `
-      <div class="problem-content" style="margin-top: 1em;">
-        ${problem.premiumSolution.content}
-      </div>
-      ` : ""}
-    </div>
-  </details>
-  ` : ""}
-
-  ${problem.note ? `<h2>Note</h2>\\n  <div class="problem-content">\\n    <p>${escapeHtml(problem.note)}</p>\\n  </div>\\n` : ""}
+  <div class="markdown-source" id="md-source">${displayHtml}</div>
 
   <script>
     const vscode = acquireVsCodeApi();
     const snippets = ${snippetsJson};
     const problem = ${problemJson};
 
-    function updateSnippet() {
-      const idx = document.getElementById('langSelect')?.value ?? '0';
-      const code = snippets[parseInt(idx)]?.code ?? '';
-      const el = document.getElementById('snippetCode');
-      if (el) el.textContent = code;
+    function openProblem(slug) {
+      vscode.postMessage({ command: 'searchProblem', slug });
     }
 
     function copySnippet() {
@@ -264,10 +225,6 @@ export function getProblemHtml(
       });
     }
 
-    function openProblem(slug) {
-      vscode.postMessage({ command: 'searchProblem', slug });
-    }
-
     function openSolution() {
       const snippetIndex = parseInt(document.getElementById('langSelect')?.value ?? '0');
       vscode.postMessage({ command: 'openSolution', problem, snippetIndex });
@@ -276,15 +233,11 @@ export function getProblemHtml(
     function submitSolution() {
       vscode.postMessage({ command: 'submitSolution' });
     }
-
-    // init
-    updateSnippet();
   </script>
 </body>
 </html>`;
 }
 
-
 export function escapeScriptJson(json: string): string {
-  return json.replace(/</g, "\\\u003c");
+  return json.replace(/</g, "\\\\u003c");
 }

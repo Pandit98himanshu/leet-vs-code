@@ -1,7 +1,7 @@
 {
   "name": "leetvscode",
   "displayName": "Leet-VS-Code",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "main": "./dist/extension.js",
   "keywords": [
     "leetcode",
@@ -276,11 +276,13 @@
   },
   "dependencies": {
     "leetcode": "^2.0.0",
-    "leetcode-query": "^2.0.1"
+    "leetcode-query": "^2.0.1",
+    "turndown": "^7.2.4"
   },
   "devDependencies": {
     "@types/node": "^25.9.3",
     "@types/react": "^19.2.17",
+    "@types/turndown": "^5.0.6",
     "@types/vscode": "^1.107.0",
     "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.28.1",
